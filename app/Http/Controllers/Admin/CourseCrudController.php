@@ -8,6 +8,7 @@ use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Backpack\CRUD\app\Library\Widget;
 
 /**
  * Class CourseCrudController
@@ -98,6 +99,8 @@ class CourseCrudController extends CrudController
     }
     protected function setupShowOperation()
     {
+        // Add all your regular columns first
+        $this->crud->set('show.setFromDb', false);
         // Default columns
         CRUD::column('title');
         CRUD::column('description');
@@ -114,24 +117,27 @@ class CourseCrudController extends CrudController
                 },
             ],
         ]);
+        // Add the custom table widgets at the end
+        $this->addLessonsTableWidget();
+        $this->addEnrollmentsTableWidget();
         // Add custom content after the default fields
-        CRUD::addColumn([
-            'name' => 'lessons_section',
-            'label' => '',
-            'type' => 'view',
-            'view' => 'admin.courses.lessons_table',
-            'escaped' => false,
-            'tab' => 'Details', // Optional: keep it in the same tab
-        ]);
+        // CRUD::addColumn([
+        //     'name' => 'lessons_section',
+        //     'label' => '',
+        //     'type' => 'view',
+        //     'view' => 'admin.courses.lessons_table',
+        //     'escaped' => false,
+        //     'tab' => 'Details', // Optional: keep it in the same tab
+        // ]);
 
-        CRUD::addColumn([
-            'name' => 'enrollments_section',
-            'label' => '',
-            'type' => 'view',
-            'view' => 'admin.courses.enrollments_table',
-            'escaped' => false,
-            'tab' => 'Details', // Optional: keep it in the same tab
-        ]);
+        // CRUD::addColumn([
+        //     'name' => 'enrollments_section',
+        //     'label' => '',
+        //     'type' => 'view',
+        //     'view' => 'admin.courses.enrollments_table',
+        //     'escaped' => false,
+        //     'tab' => 'Details', // Optional: keep it in the same tab
+        // ]);
 
         // // Display Lessons Table with search
         // CRUD::addColumn([
@@ -314,7 +320,28 @@ class CourseCrudController extends CrudController
         // ]);
     }
 
+    // add lessons table
+    protected function addLessonsTableWidget()
+    {
+        // Get the current entry
+        $entry = $this->crud->getCurrentEntry();
 
+        // Add the lessons widget
+        Widget::add()->to('after_content')->type('view')->view('vendor.backpack.crud.widgets.lessons_table')->content([
+            'entry' => $entry
+        ]);
+    }
+    // add enrollments table
+    protected function addEnrollmentsTableWidget()
+    {
+        // Get the current entry
+        $entry = $this->crud->getCurrentEntry();
+
+        // Add the enrollments widget
+        Widget::add()->to('after_content')->type('view')->view('vendor.backpack.crud.widgets.enrollments_table')->content([
+            'entry' => $entry
+        ]);
+    }
 
     public function customView(Request $request)
     {
