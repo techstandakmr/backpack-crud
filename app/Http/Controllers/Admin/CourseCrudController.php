@@ -98,6 +98,7 @@ class CourseCrudController extends CrudController
     }
     protected function setupShowOperation()
     {
+        // Default columns
         CRUD::column('title');
         CRUD::column('description');
         CRUD::column('created_at');
@@ -113,22 +114,24 @@ class CourseCrudController extends CrudController
                 },
             ],
         ]);
-        // CRUD::addColumn([
-        //     'name' => 'lessons_table',
-        //     'label' => 'Lessons',
-        //     'type' => 'view',
-        //     'view' => 'admin.courses.lessons_table',
-        //     'escaped' => false,
-        // ]);
+        // Add custom content after the default fields
+        CRUD::addColumn([
+            'name' => 'lessons_section',
+            'label' => '',
+            'type' => 'view',
+            'view' => 'admin.courses.lessons_table',
+            'escaped' => false,
+            'tab' => 'Details', // Optional: keep it in the same tab
+        ]);
 
-        // CRUD::addColumn([
-        //     'name' => 'enrollments_table',
-        //     'label' => 'Enrollments',
-        //     'type' => 'view',
-        //     'view' => 'admin.courses.enrollments_table',
-        //     'escaped' => false,
-        // ]);
-
+        CRUD::addColumn([
+            'name' => 'enrollments_section',
+            'label' => '',
+            'type' => 'view',
+            'view' => 'admin.courses.enrollments_table',
+            'escaped' => false,
+            'tab' => 'Details', // Optional: keep it in the same tab
+        ]);
 
         // // Display Lessons Table with search
         // CRUD::addColumn([
@@ -155,21 +158,21 @@ class CourseCrudController extends CrudController
         //         $lessons = $lessonsQuery->paginate(10, ['*'], 'lesson_page')->appends(request()->query());
 
 
-        //         // 🔍 Search Form (with persistent keys)
+        //         // Search Form (with persistent keys)
         //         $html = '<div class="mb-2">';
         //         $html .= '<form method="GET" class="form-inline">';
 
         //         // Input field
         //         $html .= '<input type="text" name="lesson_search" value="' . e($lessonSearch) . '" class="p-2 form-control form-control-sm mb-2" placeholder="Search Lessons">';
 
-        //         // ✅ Preserve other search/page params
+        //         // Preserve other search/page params
         //         if ($enrollSearch) $html .= '<input type="hidden" name="enroll_search" value="' . e($enrollSearch) . '">';
         //         if ($lessonPage) $html .= '<input type="hidden" name="lesson_page" value="' . e($lessonPage) . '">';
         //         if ($enrollPage) $html .= '<input type="hidden" name="enroll_page" value="' . e($enrollPage) . '">';
 
         //         $html .= '<button class="btn btn-sm btn-primary mr-2">Search</button>';
 
-        //         // ✅ Reset only lesson search
+        //         //  Reset only lesson search
         //         $keepForLessonReset = request()->except(['lesson_search', 'lesson_page']);
         //         $lessonResetQuery = count($keepForLessonReset) ? '?' . http_build_query($keepForLessonReset) : '';
         //         if ($lessonSearch || $lessonPage) {
@@ -184,7 +187,7 @@ class CourseCrudController extends CrudController
         //             return $html;
         //         }
 
-        //         // ✅ Table HTML
+        //         //  Table HTML
         //         $html .= '<div class="table-responsive">';
         //         $html .= '<table class="table table-sm table-bordered table-striped mb-0">';
         //         $html .= '<thead><tr>
@@ -246,7 +249,7 @@ class CourseCrudController extends CrudController
         //         $enrollments = $enrollmentsQuery->paginate(10, ['*'], 'enroll_page')->appends(request()->query());
 
 
-        //         // 🔍 Search Form (persistent keys)
+        //         //  Search Form (persistent keys)
         //         $html = '<div class="mb-2">';
         //         $html .= '<form method="GET" class="form-inline">';
         //         $html .= '<input type="text" name="enroll_search" value="' . e($enrollSearch) . '" class="form-control form-control-sm p-2 mb-2" placeholder="Search Enrollments">';
@@ -271,7 +274,7 @@ class CourseCrudController extends CrudController
         //             return $html;
         //         }
 
-        //         // ✅ Table HTML
+        //         //  Table HTML
         //         $html .= '<div class="table-responsive">';
         //         $html .= '<table class="table table-sm table-bordered table-striped mb-0">';
         //         $html .= '<thead class="thead-light"><tr>';

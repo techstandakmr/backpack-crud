@@ -23,7 +23,7 @@
     <div class="card-header"><h4>Enrollments</h4></div>
     <div class="card-body">
 
-        {{-- 🔍 Search Form --}}
+        {{--  Search Form --}}
         <div class="mb-2">
             <form method="GET" class="form-inline">
                 <input type="text" name="enroll_search" value="{{ e($enrollSearch) }}" class="form-control form-control-sm p-2 mb-2" placeholder="Search Enrollments">
