@@ -1,0 +1,203 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Requests\EnrollmentRequest;
+use App\Models\Enrollment;
+use Backpack\CRUD\app\Http\Controllers\CrudController;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Illuminate\Http\Request;
+
+/**
+ * Class EnrollmentCrudController
+ * @package App\Http\Controllers\Admin
+ * @property-read \Backpack\CRUD\app\Library\CrudPanel\CrudPanel $crud
+ */
+class EnrollmentCrudController extends CrudController
+{
+    use \Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+
+    /**
+     * Configure the CrudPanel object. Apply settings to all operations.
+     * 
+     * @return void
+     */
+    public function setup()
+    {
+        CRUD::setModel(\App\Models\Enrollment::class);
+        CRUD::setRoute(config('backpack.base.route_prefix') . '/enrollment');
+        CRUD::setEntityNameStrings('enrollment', 'enrollments');
+    }
+
+    /**
+     * Define what happens when the List operation is loaded.
+     * 
+     * @see  https://backpackforlaravel.com/docs/crud-operation-list-entries
+     * @return void
+     */
+    protected function setupListOperation()
+    {
+        CRUD::setFromDb(); // set columns from db columns.
+        // $this->crud->addField([
+        //     'name' => 'course_id',
+        //     'type' => 'select',
+        //     'entity' => 'course',
+        //     'model' => "App\Models\Course",
+        //     'attribute' => 'title',
+        //     'label' => "Course"
+        // ]);
+
+        /**
+         * Columns can be defined using the fluent syntax:
+         * - CRUD::column('price')->type('number');
+         */
+    }
+
+    /**
+     * Define what happens when the Create operation is loaded.
+     * 
+     * @see https://backpackforlaravel.com/docs/crud-operation-create
+     * @return void
+     */
+    // good
+    // protected function setupCreateOperation()
+    // {
+    //     CRUD::setValidation(EnrollmentRequest::class);
+    //     CRUD::setFromDb(); // set fields from db columns.
+
+    //     /**
+    //      * Fields can be defined using the fluent syntax:
+    //      * - CRUD::field('price')->type('number');
+    //      */
+    // }
+protected function setupCreateOperation()
+{
+    CRUD::setValidation(EnrollmentRequest::class);
+
+    // 1️⃣ Student Name
+    CRUD::field('student_name')
+        ->label('Student Name')
+        ->type('text');
+
+    // 2️⃣ Email
+    CRUD::field('email')
+        ->label('Email')
+        ->type('email');
+
+    // 3️⃣ Course (dropdown select)
+    CRUD::addField([
+        'name'      => 'course_id',                // column in enrollments table
+        'label'     => 'Course',
+        'type'      => 'select',
+        'entity'    => 'course',                   // relationship method in Enrollment model
+        'model'     => \App\Models\Course::class,  // related model
+        'attribute' => 'title',                    // field to show in dropdown
+    ]);
+
+    // 4️⃣ Phone
+    CRUD::field('phone')
+        ->label('Phone')
+        ->type('text');
+
+    // 5️⃣ Enrolled At
+    CRUD::field('enrolled_at')
+        ->label('Enrolled At')
+        ->type('datetime');
+}
+
+    /**
+     * Define what happens when the Update operation is loaded.
+     * 
+     * @see https://backpackforlaravel.com/docs/crud-operation-update
+     * @return void
+     */
+    protected function setupUpdateOperation()
+    {
+        $this->setupCreateOperation();
+    }
+    protected function setupShowOperation()
+    {
+        CRUD::setFromDb(); // keep all default fields
+        // display the timestamps
+        CRUD::addColumn([
+            'name'  => 'created_at',
+            'label' => 'Created At',
+            'type'  => 'datetime',
+        ]);
+        CRUD::addColumn([
+            'name'  => 'updated_at',
+            'label' => 'Updated At',
+            'type'  => 'datetime',
+        ]);
+        // Override lesson_id to show related lesson title
+        CRUD::modifyColumn('course_id', [
+            'type'      => 'select',
+            'entity'    => 'course',     
+            'attribute' => 'title',      // field from related Lesson model
+            'label'     => 'Course',     // optional: nicer label
+        ]);
+    }
+    public function destroy($id)
+    {
+        $this->crud->hasAccessOrFail('delete');
+
+        $item = $this->crud->getEntry($id);
+        $item->delete();
+
+        return redirect()->back()->with('success', 'Enrollment deleted successfully.');
+    }
+    // public function customView(Request $request)
+    // {
+    //     $query = Enrollment::with(['course', 'student']);
+
+    //     if ($request->filled('student_name')) {
+    //         $query->where('student_name', 'like', '%' . $request->student_name . '%');
+    //     }
+
+    //     if ($request->filled('course_id')) {
+    //         $query->where('course_id', $request->course_id);
+    //     }
+
+    //     $enrollments = $query->get();
+
+    //     return view('admin.enrollments.custom_view', compact('enrollments'));
+    // }
+
+
+
+    public function customView(Request $request)
+    {
+        $query = Enrollment::with(['course', 'student']);
+
+        if ($request->filled('student_name')) {
+            $query->where('student_name', 'like', '%' . $request->student_name . '%');
+        }
+
+        if ($request->filled('student_email')) {
+            $query->where('student_email', 'like', '%' . $request->student_email . '%');
+        }
+
+        if ($request->filled('course_title')) {
+            $query->whereHas('course', function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->course_title . '%');
+            });
+        }
+
+        if ($request->filled('phone')) {
+            $query->where('phone', 'like', '%' . $request->phone . '%');
+        }
+
+        $enrollments = $query->get();
+
+        return view('admin.enrollments.custom_view', compact('enrollments'));
+    }
+}
+
+
+
+
+
