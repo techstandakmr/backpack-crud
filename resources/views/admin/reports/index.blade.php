@@ -21,14 +21,26 @@
                 </div>
                 @if ($courseId)
                     <div class="col-md-2">
-                        <a href="{{ route('report.export', ['course_id' => $courseId,'export_type' => 'csv']) }}" class="btn btn-success">
-                            Export CSV
-                        </a>
-                    </div>
-                                        <div class="col-md-2">
-                        <a href="{{ route('report.export', ['course_id' => $courseId,'export_type' => 'excel']) }}" class="btn btn-success">
-                            Export Excel
-                        </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="{{ route('report.export', ['course_id' => $courseId, 'export_type' => 'csv']) }}">
+                                        Export as CSV
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href="{{ route('report.export', ['course_id' => $courseId, 'export_type' => 'excel']) }}">
+                                        Export as Excel
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 @endif
             </div>
