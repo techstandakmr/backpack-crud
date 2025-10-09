@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CourseCrudController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\EnrollmentCrudController;
 use App\Http\Controllers\Admin\LessonCrudController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResourceCrudController;
 use App\Http\Controllers\Admin\UserCrudController;
 
@@ -39,4 +40,6 @@ Route::group([
     // Custom route for filtered listing
     Route::get('user/custom-view', [UserCrudController::class, 'customView'])
         ->name('admin.user.custom');
+    Route::get('report', [ReportController::class, 'index'])->name('report.index');
+    Route::get('report/export', [ReportController::class, 'export'])->name('report.export');
 });
