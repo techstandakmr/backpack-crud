@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\User;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -36,4 +37,5 @@ class ReportController extends Controller
             return Excel::download(new EnrollmentsExport($request->course_id), 'enrollments_report.xlsx');
         };
     }
+
 }

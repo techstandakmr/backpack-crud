@@ -78,17 +78,17 @@ protected function setupCreateOperation()
 {
     CRUD::setValidation(ResourceRequest::class);
 
-    // 1️⃣ Name field
+    //  Name field
     CRUD::field('name')
         ->label('Name')
         ->type('text');
 
-    // 2️⃣ URL field
+    //  URL field
     CRUD::field('url')
         ->label('Course URL')
         ->type('url');
 
-    // 3️⃣ Simple select for Courses
+    //  Simple select for Courses
     CRUD::addField([
         'name'        => 'lesson_id',              // the column in your resources table
         'label'       => 'Lesson',

@@ -7,7 +7,7 @@ use App\Models\Enrollment;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
-
+use PDF; // DomPDF facade
 /**
  * Class EnrollmentCrudController
  * @package App\Http\Controllers\Admin
@@ -63,51 +63,40 @@ class EnrollmentCrudController extends CrudController
      * @see https://backpackforlaravel.com/docs/crud-operation-create
      * @return void
      */
-    // good
-    // protected function setupCreateOperation()
-    // {
-    //     CRUD::setValidation(EnrollmentRequest::class);
-    //     CRUD::setFromDb(); // set fields from db columns.
+    protected function setupCreateOperation()
+    {
+        CRUD::setValidation(EnrollmentRequest::class);
 
-    //     /**
-    //      * Fields can be defined using the fluent syntax:
-    //      * - CRUD::field('price')->type('number');
-    //      */
-    // }
-protected function setupCreateOperation()
-{
-    CRUD::setValidation(EnrollmentRequest::class);
+        //  Student Name
+        CRUD::field('student_name')
+            ->label('Student Name')
+            ->type('text');
 
-    // 1️⃣ Student Name
-    CRUD::field('student_name')
-        ->label('Student Name')
-        ->type('text');
+        //  Email
+        CRUD::field('email')
+            ->label('Email')
+            ->type('email');
 
-    // 2️⃣ Email
-    CRUD::field('email')
-        ->label('Email')
-        ->type('email');
+        //  Course (dropdown select)
+        CRUD::addField([
+            'name'      => 'course_id',                // column in enrollments table
+            'label'     => 'Course',
+            'type'      => 'select',
+            'entity'    => 'course',                   // relationship method in Enrollment model
+            'model'     => \App\Models\Course::class,  // related model
+            'attribute' => 'title',                    // field to show in dropdown
+        ]);
 
-    // 3️⃣ Course (dropdown select)
-    CRUD::addField([
-        'name'      => 'course_id',                // column in enrollments table
-        'label'     => 'Course',
-        'type'      => 'select',
-        'entity'    => 'course',                   // relationship method in Enrollment model
-        'model'     => \App\Models\Course::class,  // related model
-        'attribute' => 'title',                    // field to show in dropdown
-    ]);
+        //  Phone
+        CRUD::field('phone')
+            ->label('Phone')
+            ->type('text');
 
-    // 4️⃣ Phone
-    CRUD::field('phone')
-        ->label('Phone')
-        ->type('text');
-
-    // 5️⃣ Enrolled At
-    CRUD::field('enrolled_at')
-        ->label('Enrolled At')
-        ->type('datetime');
-}
+        //  Enrolled At
+        CRUD::field('enrolled_at')
+            ->label('Enrolled At')
+            ->type('datetime');
+    }
 
     /**
      * Define what happens when the Update operation is loaded.
@@ -136,10 +125,13 @@ protected function setupCreateOperation()
         // Override lesson_id to show related lesson title
         CRUD::modifyColumn('course_id', [
             'type'      => 'select',
-            'entity'    => 'course',     
+            'entity'    => 'course',
             'attribute' => 'title',      // field from related Lesson model
             'label'     => 'Course',     // optional: nicer label
         ]);
+        // add button to export PDF
+        $this->crud->addButtonFromView('line', 'export_pdf', 'export_pdf', 'beginning');
+
     }
     public function destroy($id)
     {
@@ -150,28 +142,11 @@ protected function setupCreateOperation()
 
         return redirect()->back()->with('success', 'Enrollment deleted successfully.');
     }
-    // public function customView(Request $request)
-    // {
-    //     $query = Enrollment::with(['course', 'student']);
-
-    //     if ($request->filled('student_name')) {
-    //         $query->where('student_name', 'like', '%' . $request->student_name . '%');
-    //     }
-
-    //     if ($request->filled('course_id')) {
-    //         $query->where('course_id', $request->course_id);
-    //     }
-
-    //     $enrollments = $query->get();
-
-    //     return view('admin.enrollments.custom_view', compact('enrollments'));
-    // }
-
 
 
     public function customView(Request $request)
     {
-        $query = Enrollment::with(['course', 'student']);
+        $query = Enrollment::with(['course']);
 
         if ($request->filled('student_name')) {
             $query->where('student_name', 'like', '%' . $request->student_name . '%');
@@ -190,14 +165,27 @@ protected function setupCreateOperation()
         if ($request->filled('phone')) {
             $query->where('phone', 'like', '%' . $request->phone . '%');
         }
-
-        $enrollments = $query->get();
+        // add pagination
+        $enrollments = $query->paginate(10)->appends($request->all());
 
         return view('admin.enrollments.custom_view', compact('enrollments'));
     }
+    public function exportPdf($email)
+    {
+        // Get the course's enrollments
+        $enrollments = Enrollment::where('student_email', $email)->get();
+
+        // Share data with view
+        $data = [
+            'enrollments' => $enrollments,
+        ];
+
+        // Load a Blade view for PDF
+        $pdf = PDF::loadView('admin.enrollments.pdf', $data);
+
+        // Download the PDF
+        // random string
+        $randomString = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'), 0, 5);
+        return $pdf->download('enrollments_course_' .$randomString. '.pdf');
+    }
 }
-
-
-
-
-

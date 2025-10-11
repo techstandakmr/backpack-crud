@@ -42,4 +42,7 @@ Route::group([
         ->name('admin.user.custom');
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
     Route::get('report/export', [ReportController::class, 'export'])->name('report.export');
+    Route::get('admin/enrollment/{id}/export-pdf', [EnrollmentCrudController::class, 'exportPdf'])
+    ->name('enrollment.export.pdf');
+
 });

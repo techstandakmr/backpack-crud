@@ -21,8 +21,8 @@ class Enrollment extends Model
     {
         return $this->belongsTo(Course::class);
     }
-    public function student()
+    public function studentEnrollments()
     {
-        return $this->belongsTo(User::class, 'student_id');
+        return self::where('student_email', $this->student_email)->with('course')->get();
     }
 }

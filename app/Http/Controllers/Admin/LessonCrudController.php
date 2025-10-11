@@ -79,19 +79,19 @@ class LessonCrudController extends CrudController
     {
         CRUD::setValidation(LessonRequest::class);
 
-        // 1️⃣ Title Field
+        //  Title Field
         CRUD::field('title')
             ->type('text')
             ->label('Lesson Title')
             ->attributes(['placeholder' => 'Enter lesson title']);
 
-        // 2️⃣ Content Field
+        //  Content Field
         CRUD::field('content')
             ->type('textarea')
             ->label('Content')
             ->attributes(['placeholder' => 'Enter lesson content', 'rows' => 6]);
 
-        // 3️⃣ Course Selection (Simple Dropdown)
+        //  Course Selection (Simple Dropdown)
         CRUD::addField([
             'name' => 'course_id',
             'label' => 'Course',
