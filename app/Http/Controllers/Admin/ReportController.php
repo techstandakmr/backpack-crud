@@ -19,22 +19,21 @@ class ReportController extends Controller
 
         // Get selected course_id (if any)
         $courseId = $request->input('course_id');
-
+        
         // Get enrollments based on filter
-        $enrollments = Enrollment::with('course')
-            ->when($courseId, fn($q) => $q->where('course_id', $courseId))
-            ->get();
-
+        $query = Enrollment::with('course')
+            ->when($courseId, fn($q) => $q->where('course_id', $courseId));
+        $enrollments = $query->paginate(10)->appends($request->all());
         return view('admin.reports.index', compact('courses', 'enrollments', 'courseId'));
     }
 
+
     public function export(Request $request)
     {
-        if($request->export_type == 'csv'){
+        if ($request->export_type == 'csv') {
             return Excel::download(new EnrollmentsExport($request->course_id), 'enrollments_report.csv', ExcelExcel::CSV);
-        }else{
+        } else {
             return Excel::download(new EnrollmentsExport($request->course_id), 'enrollments_report.xlsx');
         };
-
     }
 }
