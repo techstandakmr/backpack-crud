@@ -63,12 +63,22 @@ class UserCrudController extends CrudController
     protected function setupCreateOperation()
     {
         CRUD::setValidation(UserRequest::class);
-        CRUD::setFromDb(); // set fields from db columns.
 
-        /**
-         * Fields can be defined using the fluent syntax:
-         * - CRUD::field('price')->type('number');
-         */
+        CRUD::setFromDb(); // keep the DB fields
+
+        // Add Role field manually
+        CRUD::addField([
+            'name' => 'role',
+            'label' => 'Role',
+            'type' => 'select_from_array',
+            'options' => [
+                'student' => 'Student',
+                'teacher' => 'Teacher',
+                'admin' => 'Admin',
+            ],
+            'allows_null' => false,
+            'default' => 'student',
+        ]);
     }
 
     /**
