@@ -68,14 +68,17 @@ class CourseCrudController extends CrudController
             ->label('Description')
             ->attributes(['placeholder' => 'Enter course description', 'rows' => 4]);
 
-        // Author (User) Selection with Create Button
+        // Teacher (User) Selection with Create Button
         CRUD::addField([
             'name' => 'author_id',
             'label' => 'Author',
             'type' => 'select',
             'entity' => 'author',
             'attribute' => 'name',
-            'model' => "App\Models\User"
+            'model' => "App\Models\User",
+            'options' => (function ($query) {
+                return $query->where('role', 'teacher')->get();
+            }),
         ]);
     }
     /**
