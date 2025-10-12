@@ -7,7 +7,6 @@ use App\Models\Enrollment;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
-use PDF; // DomPDF facade
 /**
  * Class EnrollmentCrudController
  * @package App\Http\Controllers\Admin
@@ -129,9 +128,6 @@ class EnrollmentCrudController extends CrudController
             'attribute' => 'title',      // field from related Lesson model
             'label'     => 'Course',     // optional: nicer label
         ]);
-        // add button to export PDF
-        $this->crud->addButtonFromView('line', 'export_pdf', 'export_pdf', 'beginning');
-
     }
     public function destroy($id)
     {
@@ -146,46 +142,38 @@ class EnrollmentCrudController extends CrudController
 
     public function customView(Request $request)
     {
-        $query = Enrollment::with(['course']);
+        $query = Enrollment::with(['course', 'user']); // include user relationship
 
+        // Filter by student name
         if ($request->filled('student_name')) {
-            $query->where('student_name', 'like', '%' . $request->student_name . '%');
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->student_name . '%');
+            });
         }
 
+        // Filter by student email
         if ($request->filled('student_email')) {
-            $query->where('student_email', 'like', '%' . $request->student_email . '%');
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('email', 'like', '%' . $request->student_email . '%');
+            });
         }
 
+        // Filter by course title
         if ($request->filled('course_title')) {
             $query->whereHas('course', function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->course_title . '%');
             });
         }
 
+        // Filter by phone (from user table)
         if ($request->filled('phone')) {
-            $query->where('phone', 'like', '%' . $request->phone . '%');
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('phone', 'like', '%' . $request->phone . '%');
+            });
         }
-        // add pagination
+
         $enrollments = $query->paginate(10)->appends($request->all());
 
         return view('admin.enrollments.custom_view', compact('enrollments'));
-    }
-    public function exportPdf($email)
-    {
-        // Get the course's enrollments
-        $enrollments = Enrollment::where('student_email', $email)->get();
-
-        // Share data with view
-        $data = [
-            'enrollments' => $enrollments,
-        ];
-
-        // Load a Blade view for PDF
-        $pdf = PDF::loadView('admin.enrollments.pdf', $data);
-
-        // Download the PDF
-        // random string
-        $randomString = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'), 0, 5);
-        return $pdf->download('enrollments_course_' .$randomString. '.pdf');
     }
 }

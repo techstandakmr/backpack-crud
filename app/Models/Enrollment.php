@@ -8,21 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Enrollment extends Model
 {
-    use CrudTrait;
-    use HasFactory;
+    use CrudTrait, HasFactory;
+
     protected $fillable = [
         'course_id',
-        'student_name',
-        'student_email',
-        'phone',
+        'user_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function course()
     {
         return $this->belongsTo(Course::class);
-    }
-    public function studentEnrollments()
-    {
-        return self::where('student_email', $this->student_email)->with('course')->get();
     }
 }

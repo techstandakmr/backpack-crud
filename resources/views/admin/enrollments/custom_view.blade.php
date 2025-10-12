@@ -47,11 +47,14 @@
                 @foreach ($enrollments as $enrollment)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $enrollment->student_name }}</td>
-                        <td>{{ $enrollment->student_email }}</td>
-                        <td>{{ $enrollment->course->title ?? 'N/A' }}</td>
-                        <td>{{ $enrollment->phone ?? 'N/A' }}</td>
+                        <td><a href="{{ url('admin/user/' . $enrollment->user->id . '/show') }}">{{ $enrollment->user->name ?? 'N/A' }}</a></td>
+                        <td>{{ $enrollment->user->email ?? 'N/A' }}</td>
+                        <td><a
+                                href="{{ url('admin/course/' . $enrollment->course->id . '/show') }}">{{ $enrollment->course->title ?? 'N/A' }}</a>
+                        </td>
+                        <td>{{ $enrollment->user->phone ?? 'N/A' }}</td>
                         <td>{{ $enrollment->created_at }}</td>
+
                         <td>
                             <a href="{{ url('admin/enrollment/' . $enrollment->id . '/edit') }}"
                                 class="btn btn-sm btn-warning">Edit</a>

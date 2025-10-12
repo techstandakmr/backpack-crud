@@ -30,7 +30,7 @@
                         </div>
 
                         <input type="hidden" name="course_id" id="selectedCourseId" value="{{ $courseId }}">
-                       
+
 
 
                         {{-- <select name="course_id" class="form-control">
@@ -67,6 +67,12 @@
                                     Export as Excel
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item"
+                                    href="{{ route('report.export', ['course_id' => $courseId, 'export_type' => 'pdf']) }}">
+                                    Export as PDF
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -76,7 +82,8 @@
         <table class="table table-bordered">
             <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
+                    <th>Serial No.</th>
+                    <th>Enrollment ID</th>
                     <th>Student Name</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -86,11 +93,14 @@
             <tbody>
                 @forelse($enrollments as $enroll)
                     <tr>
+                        <td>{{ $loop->iteration }} </td>
                         <td><a href="{{ url('admin/enrollment/' . $enroll->id . '/show') }}">{{ $enroll->id }}</a>
                         </td>
-                        <td>{{ $enroll->student_name }}</td>
-                        <td>{{ $enroll->student_email }}</td>
-                        <td>{{ $enroll->phone }}</td>
+                        <td>
+                            <a href="{{ url('admin/user/' . $enroll->user->id . '/show') }}">{{ $enroll->user->name }}</a>
+                        </td>
+                        <td>{{ $enroll->user->email }}</td>
+                        <td>{{ $enroll->user->phone }}</td>
                         <td>{{ $enroll->created_at->format('d M Y') }}</td>
                     </tr>
                 @empty
@@ -107,33 +117,33 @@
 @endsection
 
 @push('after_scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('courseSearch');
-    const courseItems = document.querySelectorAll('.course-item');
-    const dropdownButton = document.getElementById('courseDropdown');
-    const selectedCourseId = document.getElementById('selectedCourseId');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('courseSearch');
+            const courseItems = document.querySelectorAll('.course-item');
+            const dropdownButton = document.getElementById('courseDropdown');
+            const selectedCourseId = document.getElementById('selectedCourseId');
 
-    // Live search filter
-    searchInput.addEventListener('keyup', function() {
-        const filter = this.value.toLowerCase();
-        courseItems.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(filter) ? '' : 'none';
+            // Live search filter
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                courseItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+
+            // Select course
+            courseItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-id');
+                    const title = this.textContent;
+
+                    selectedCourseId.value = id;
+                    dropdownButton.textContent = title;
+                });
+            });
         });
-    });
-
-    // Select course
-    courseItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const id = this.getAttribute('data-id');
-            const title = this.textContent;
-
-            selectedCourseId.value = id;
-            dropdownButton.textContent = title;
-        });
-    });
-});
-</script>
+    </script>
 @endpush

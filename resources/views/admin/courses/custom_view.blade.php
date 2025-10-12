@@ -45,7 +45,7 @@
             <tbody>
                 @foreach ($courses as $course)
                     <tr>
-                        <td>{{ $loop->iteration }}</td> 
+                        <td>{{ $loop->iteration }}</td>
                         <td>{{ $course['title'] }}</td>
                         <td>{{ Str::limit($course['description'], 80) }}</td> {{-- ✅ short description --}}
                         <td>{{ $course['author']['name'] ?? 'N/A' }}</td>
@@ -55,7 +55,8 @@
                                 data-bs-target="#details-{{ $course['id'] }}">
                                 Show Details
                             </button>
-
+                            <a href="{{ url('admin/course/' . $course['id'] . '/show') }}"
+                                class="btn btn-sm btn-secondary">View</a>
                             <a href="{{ url('admin/course/' . $course['id'] . '/edit') }}" class="btn btn-sm btn-warning">
                                 Edit
                             </a>
@@ -70,8 +71,7 @@
                                 </button>
                             </form>
 
-                            <a href="{{ url('admin/course/' . $course['id'] . '/show') }}"
-                                class="btn btn-sm btn-secondary">View</a>
+
                         </td>
                     </tr>
 

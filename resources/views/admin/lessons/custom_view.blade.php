@@ -46,6 +46,8 @@
                         <td>{{ Str::limit($lesson->content, 50) }}</td>
                         <td>{{ $lesson->created_at }}</td>
                         <td>
+                            <a href="{{ url('admin/lesson/' . $lesson->id . '/show') }}"
+                                class="btn btn-sm btn-secondary">View</a>
                             <a href="{{ url('admin/lesson/' . $lesson->id . '/edit') }}"
                                 class="btn btn-sm btn-warning">Edit</a>
 
@@ -56,9 +58,6 @@
                                 <button type="submit" class="btn btn-sm btn-danger"
                                     onclick="return confirm('Are you sure?')">Delete</button>
                             </form>
-
-                            <a href="{{ url('admin/lesson/' . $lesson->id . '/show') }}"
-                                class="btn btn-sm btn-secondary">View</a>
                         </td>
                     </tr>
                 @endforeach

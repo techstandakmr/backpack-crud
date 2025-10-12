@@ -25,6 +25,10 @@ class Course extends Model
     {
         return $this->hasMany(Enrollment::class);
     }
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'enrollments')->withTimestamps();
+    }
     // Automatically delete related lessons/enrollments
     protected static function booted()
     {

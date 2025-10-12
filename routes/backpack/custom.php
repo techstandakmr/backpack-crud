@@ -27,22 +27,29 @@ Route::group([
     Route::crud('resource', 'ResourceCrudController');
     Route::crud('enrollment', 'EnrollmentCrudController');
     Route::crud('user', 'UserCrudController');
-    // Custom route inside the admin group
+    // custom routes for courses
     Route::get('course/custom-view', [CourseCrudController::class, 'customView'])
         ->name('admin.course.custom');
+    // custom routes for enrollments listing
     Route::get('enrollment/custom-view', [EnrollmentCrudController::class, 'customView'])
         ->name('admin.enrollment.custom');
-    // Lesson
+    // custom routes for lessons listing
     Route::get('lesson/custom-view', [LessonCrudController::class, 'customView'])
         ->name('admin.lesson.custom');
+    // custom routes for resources listing
     Route::get('resource/custom-view', [ResourceCrudController::class, 'customView'])
         ->name('admin.resource.custom');
-    // Custom route for filtered listing
+    // custom routes for users listing
     Route::get('user/custom-view', [UserCrudController::class, 'customView'])
         ->name('admin.user.custom');
+    // custom routes for reports
     Route::get('report', [ReportController::class, 'index'])->name('report.index');
+    // custom routes for report exports files
     Route::get('report/export', [ReportController::class, 'export'])->name('report.export');
-    Route::get('admin/enrollment/{id}/export-pdf', [EnrollmentCrudController::class, 'exportPdf'])
-    ->name('enrollment.export.pdf');
-
+    // Route::get('enrollment/{id}/export-pdf', [EnrollmentCrudController::class, 'exportPdf'])
+    //     ->name('enrollment.export.pdf');
+    // custom routes for course & enrollment details of user
+    Route::get('user/{id}/export-pdf', [UserCrudController::class, 'exportPdf'])->name('user.export.pdf');
+    Route::get('user/{id}/export-csv', [UserCrudController::class, 'exportCsv'])->name('user.export.csv');
+    Route::get('user/{id}/export-excel', [UserCrudController::class, 'exportExcel'])->name('user.export.excel');
 });

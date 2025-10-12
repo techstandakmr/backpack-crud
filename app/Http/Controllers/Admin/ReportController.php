@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\EnrollmentsExport;
 use Maatwebsite\Excel\Excel as ExcelExcel;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 class ReportController extends Controller
 {
     public function index(Request $request)
@@ -20,7 +20,7 @@ class ReportController extends Controller
 
         // Get selected course_id (if any)
         $courseId = $request->input('course_id');
-        
+
         // Get enrollments based on filter
         $query = Enrollment::with('course')
             ->when($courseId, fn($q) => $q->where('course_id', $courseId));
@@ -31,11 +31,25 @@ class ReportController extends Controller
 
     public function export(Request $request)
     {
-        if ($request->export_type == 'csv') {
-            return Excel::download(new EnrollmentsExport($request->course_id), 'enrollments_report.csv', ExcelExcel::CSV);
-        } else {
-            return Excel::download(new EnrollmentsExport($request->course_id), 'enrollments_report.xlsx');
-        };
-    }
+        $courseId = $request->course_id;
+        $exportType = $request->export_type;
 
+        if ($exportType === 'csv') {
+            return Excel::download(new EnrollmentsExport($courseId), 'enrollments_report.csv', ExcelExcel::CSV);
+        } elseif ($exportType === 'excel') {
+            return Excel::download(new EnrollmentsExport($courseId), 'enrollments_report.xlsx');
+        } elseif ($exportType === 'pdf') {
+            $course = Course::find($courseId);
+            $enrollments = Enrollment::with('user')
+                ->where('course_id', $courseId)
+                ->get();
+
+            $pdf = Pdf::loadView('admin.reports.pdf', compact('enrollments', 'course'))
+                ->setPaper('a4', 'portrait');
+
+            return $pdf->download('enrollments_report.pdf');
+        }
+
+        return back()->with('error', 'Invalid export type selected.');
+    }
 }

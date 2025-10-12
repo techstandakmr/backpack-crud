@@ -7,6 +7,11 @@ use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
+use Backpack\CRUD\app\Library\Widget;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Response;
+use App\Exports\UserExport;
 
 /**
  * Class UserCrudController
@@ -76,6 +81,94 @@ class UserCrudController extends CrudController
     {
         $this->setupCreateOperation();
     }
+    protected function setupShowOperation()
+    {
+        $this->setupListOperation();
+        CRUD::addColumn('created_at');
+        CRUD::addColumn('updated_at');
+
+        // Add the custom table widgets at the end
+
+        // Show courses only for student or teacher
+        $entry = $this->crud->getCurrentEntry();
+
+        if (in_array($entry->role, ['student', 'teacher'])) {
+            $this->addCoursesWidgets();
+        }
+        // add button to export PDF
+        if (
+            $entry->role == 'student' &&
+            ($entry->coursesEnrolled()->count() > 0 || $entry->enrollments()->count() > 0)
+        ) {
+            $this->crud->addButtonFromView('line', 'export_pdf', 'export_pdf', 'beginning');
+        }
+        if (
+            $entry->role == 'teacher' &&
+            ($entry->coursesAuthored()->count() > 0)
+        ) {
+            $this->crud->addButtonFromView('line', 'export_pdf', 'export_pdf', 'beginning');
+        }
+    }
+    protected function addCoursesWidgets()
+    {
+        // Get the current entry
+        $entry = $this->crud->getCurrentEntry();
+
+        // Add the lessons widget
+        Widget::add()->to('after_content')->type('view')->view('vendor.backpack.crud.widgets.courses_table')->content([
+            'entry' => $entry
+        ]);
+    }
+    public function exportPdf($id)
+    {
+        $user = User::with(['coursesEnrolled', 'enrollments.course', 'coursesAuthored'])->findOrFail($id);
+
+        $data = [
+            'user' => $user,
+        ];
+
+        $pdf = Pdf::loadView('admin.users.user_report', $data);
+
+        return $pdf->download($user->name . '_report.pdf');
+    }
+
+    public function exportCsv($id)
+    {
+        $user = User::with(['coursesEnrolled', 'enrollments.course', 'coursesAuthored'])->findOrFail($id);
+
+        $filename = $user->name . '_report.csv';
+        $handle = fopen($filename, 'w+');
+
+        if ($user->role === 'student') {
+            fputcsv($handle, ['Enrollment ID', 'Course Title', 'Description', 'Enrolled At']);
+            foreach ($user->enrollments as $enroll) {
+                fputcsv($handle, [
+                    $enroll->id,
+                    $enroll->course->title ?? 'N/A',
+                    $enroll->course->description ?? 'N/A',
+                    $enroll->created_at->format('Y-m-d'),
+                ]);
+            }
+        } elseif ($user->role === 'teacher') {
+            fputcsv($handle, ['Course ID', 'Title', 'Description', 'Created At']);
+            foreach ($user->coursesAuthored as $course) {
+                fputcsv($handle, [
+                    $course->id,
+                    $course->title,
+                    $course->description,
+                    $course->created_at->format('Y-m-d'),
+                ]);
+            }
+        }
+
+        fclose($handle);
+        return Response::download($filename)->deleteFileAfterSend(true);
+    }
+
+    public function exportExcel($id)
+    {
+        return Excel::download(new UserExport($id), 'user_report.xlsx');
+    }
     public function customView(Request $request)
     {
         $query = User::query();
@@ -90,7 +183,18 @@ class UserCrudController extends CrudController
             $query->where('email', 'like', '%' . $request->email . '%');
         }
 
-        $users = $query->get();
+        // Filter by phone
+        if ($request->filled('phone')) {
+            $query->where('phone', 'like', '%' . $request->phone . '%');
+        }
+
+        //  Filter by role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        //  pagination
+        $users = $query->paginate(10)->appends($request->all());
 
         return view('admin.users.custom_view', compact('users'));
     }

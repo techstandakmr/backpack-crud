@@ -14,20 +14,16 @@ class EnrollmentRequest extends FormRequest
     public function rules()
     {
         return [
-            'course_id'     => 'required|exists:courses,id',
-            'student_name'  => 'required|string|min:3|max:255',
-            'student_email' => 'required|email|max:255',
-            'phone'         => 'nullable|string|max:20',
+            'course_id' => 'required|exists:courses,id',
+            'user_id'   => 'required|exists:users,id',
         ];
     }
 
     public function attributes()
     {
         return [
-            'course_id'     => 'Course',
-            'student_name'  => 'Student Name',
-            'student_email' => 'Student Email',
-            'phone'         => 'Phone Number',
+            'course_id' => 'Course',
+            'user_id'   => 'User',
         ];
     }
 
@@ -35,8 +31,7 @@ class EnrollmentRequest extends FormRequest
     {
         return [
             'course_id.required' => 'Please select a course.',
-            'student_name.required' => 'Student name is required.',
-            'student_email.required' => 'Student email is required.',
+            'user_id.required'   => 'Please select a user.',
         ];
     }
 }

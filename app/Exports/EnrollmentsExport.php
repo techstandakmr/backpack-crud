@@ -17,9 +17,19 @@ class EnrollmentsExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return Enrollment::where('course_id', $this->courseId)
-            ->select('id', 'student_name', 'student_email', 'phone', 'created_at')
-            ->get();
+        // Get enrollments with user data
+        return Enrollment::with('user')
+            ->where('course_id', $this->courseId)
+            ->get()
+            ->map(function ($enroll) {
+                return [
+                    'id' => $enroll->id,
+                    'student_name' => $enroll->user->name ?? $enroll->student_name,
+                    'student_email' => $enroll->user->email ?? $enroll->student_email,
+                    'phone' => $enroll->user->phone ?? $enroll->phone,
+                    'created_at' => $enroll->created_at,
+                ];
+            });
     }
 
     public function headings(): array
