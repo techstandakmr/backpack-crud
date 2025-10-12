@@ -65,17 +65,17 @@ class EnrollmentCrudController extends CrudController
     protected function setupCreateOperation()
     {
         CRUD::setValidation(EnrollmentRequest::class);
-
-        //  Student Name
-        CRUD::field('student_name')
-            ->label('Student Name')
-            ->type('text');
-
-        //  Email
-        CRUD::field('email')
-            ->label('Email')
-            ->type('email');
-
+        CRUD::addField([
+            'name' => 'user_id',
+            'label' => 'Student',
+            'type' => 'select',
+            'entity' => 'user',
+            'attribute' => 'name',
+            'model' => "App\Models\User",
+            'options' => (function ($query) {
+                return $query->where('role', 'student')->get();
+            }),
+        ]);
         //  Course (dropdown select)
         CRUD::addField([
             'name'      => 'course_id',                // column in enrollments table
@@ -86,15 +86,6 @@ class EnrollmentCrudController extends CrudController
             'attribute' => 'title',                    // field to show in dropdown
         ]);
 
-        //  Phone
-        CRUD::field('phone')
-            ->label('Phone')
-            ->type('text');
-
-        //  Enrolled At
-        CRUD::field('enrolled_at')
-            ->label('Enrolled At')
-            ->type('datetime');
     }
 
     /**
