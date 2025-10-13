@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\ResourceRequest;
+use App\Models\Lesson;
 use App\Models\Resource;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
@@ -42,19 +43,40 @@ class ResourceCrudController extends CrudController
     protected function setupListOperation()
     {
         CRUD::setFromDb(); // set columns from db columns.
-        $this->crud->addField([
-            'name' => 'lesson_id',
-            'type' => 'select',
-            'entity' => 'lesson',
-            'model' => "App\Models\Lesson",
+        // update lesson_id to show related lesson title
+        CRUD::modifyColumn('lesson_id', [
+            'type'      => 'select',
+            'entity'    => 'lesson',
             'attribute' => 'title',
-            'label' => "Lesson"
+            'label'     => 'Lesson',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url('lesson/' . $entry->lesson_id);
+                }
+            ]
         ]);
-
-        /**
-         * Columns can be defined using the fluent syntax:
-         * - CRUD::column('price')->type('number');
-         */
+        // update URL field to show full URL
+        CRUD::modifyColumn('url', [
+            'type' => 'link',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return $entry->url;
+                }
+            ]
+        ]);
+        CRUD::addFilter(
+            [
+                'name' => 'lesson_id',
+                'type' => 'select2',
+                'label' => 'Filter by Lesson',
+            ],
+            function () {
+                return Lesson::all()->pluck('title', 'id')->toArray();
+            },
+            function ($value) {
+                CRUD::addClause('where', 'lesson_id', $value);
+            }
+        );
     }
 
     /**
@@ -74,30 +96,30 @@ class ResourceCrudController extends CrudController
     //      * - CRUD::field('price')->type('number');
     //      */
     // }
-protected function setupCreateOperation()
-{
-    CRUD::setValidation(ResourceRequest::class);
+    protected function setupCreateOperation()
+    {
+        CRUD::setValidation(ResourceRequest::class);
 
-    //  Name field
-    CRUD::field('name')
-        ->label('Name')
-        ->type('text');
+        //  Name field
+        CRUD::field('name')
+            ->label('Name')
+            ->type('text');
 
-    //  URL field
-    CRUD::field('url')
-        ->label('Course URL')
-        ->type('url');
+        //  URL field
+        CRUD::field('url')
+            ->label('Course URL')
+            ->type('url');
 
-    //  Simple select for Courses
-    CRUD::addField([
-        'name'        => 'lesson_id',              // the column in your resources table
-        'label'       => 'Lesson',
-        'type'        => 'select',
-        'entity'      => 'Lesson',                 // relationship method on Resource model
-        'model'       => \App\Models\Lesson::class, // related model
-        'attribute'   => 'title',                  // field shown in dropdown
-    ]);
-}
+        //  Simple select for Courses
+        CRUD::addField([
+            'name'        => 'lesson_id',              // the column in your resources table
+            'label'       => 'Lesson',
+            'type'        => 'select',
+            'entity'      => 'Lesson',                 // relationship method on Resource model
+            'model'       => \App\Models\Lesson::class, // related model
+            'attribute'   => 'title',                  // field shown in dropdown
+        ]);
+    }
 
     /**
      * Define what happens when the Update operation is loaded.
@@ -189,7 +211,3 @@ protected function setupCreateOperation()
         return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 }
-
-
-
-

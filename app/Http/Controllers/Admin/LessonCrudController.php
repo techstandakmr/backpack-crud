@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\LessonRequest;
+use App\Models\Course;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
@@ -41,20 +42,50 @@ class LessonCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::setFromDb(); // set columns from db columns.
-        $this->crud->addField([
-            'name' => 'course_id',
-            'type' => 'select',
-            'entity' => 'course',
-            'model' => "App\Models\Course",
+        // Default columns
+        CRUD::column('title');
+        CRUD::column('content');
+        CRUD::addColumn([
+            'name' => 'course',
+            'label' => 'Course',
+            'type' => 'relationship',
             'attribute' => 'title',
-            'label' => "Course"
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url("course/$related_key/show");
+                }
+            ],
         ]);
 
-        /**
-         * Columns can be defined using the fluent syntax:
-         * - CRUD::column('price')->type('number');
-         */
+        // add filters
+        // CRUD::addFilter([
+        //     'name' => 'title',
+        //     'type' => 'text',
+        //     'label' => 'Filter by title'
+        // ], false, function ($value) {
+        //     CRUD::addClause('where', 'title', 'like', "%$value%");
+        // });
+        // CRUD::addFilter([
+        //     'name' => 'content',
+        //     'type' => 'text',
+        //     'label' => 'Filter by content'
+        // ], false, function ($value) {
+        //     CRUD::addClause('where', 'content', 'like', "%$value%");
+        // });
+
+        CRUD::addFilter(
+            [
+                'name' => 'course_id',
+                'type' => 'select2',
+                'label' => 'Filter by course',
+            ],
+            function () {
+                return Course::pluck('title', 'id')->toArray();;
+            },
+            function ($value) {
+                CRUD::addClause('where', 'course_id', '=', $value);
+            }
+        );
     }
 
     /**

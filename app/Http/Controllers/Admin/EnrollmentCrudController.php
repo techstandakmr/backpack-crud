@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\EnrollmentRequest;
+use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Http\Request;
+
 /**
  * Class EnrollmentCrudController
  * @package App\Http\Controllers\Admin
@@ -40,20 +43,72 @@ class EnrollmentCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::setFromDb(); // set columns from db columns.
-        // $this->crud->addField([
-        //     'name' => 'course_id',
-        //     'type' => 'select',
-        //     'entity' => 'course',
-        //     'model' => "App\Models\Course",
-        //     'attribute' => 'title',
-        //     'label' => "Course"
-        // ]);
+        // Student Name
+        CRUD::addColumn([
+            'label'     => 'Student Name',
+            'type' => 'text',
+            'name' => 'user.name',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url('user/' . $related_key . '/show');
+                },
+            ],
+        ]);
 
-        /**
-         * Columns can be defined using the fluent syntax:
-         * - CRUD::column('price')->type('number');
-         */
+        // Student Email
+        CRUD::addColumn([
+            'label'     => 'Student Email',
+            'type' => 'text',
+            'name' => 'user.email',
+        ]);
+
+        // Student Phone
+        CRUD::addColumn([
+            'label'     => 'Student Phone',
+            'type' => 'text',
+            'name' => 'user.phone',
+        ]);
+
+        // Course Title
+        CRUD::addColumn([
+            'name'      => 'course',
+            'label'     => 'Course',
+            'type'      => 'relationship',
+            'attribute' => 'title',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url('course/' . $related_key . '/show');
+                },
+            ],
+        ]);
+        CRUD::addFilter(
+            [
+                'name' => 'course_id',
+                'type' => 'select2',
+                'label' => 'Filter by Course',
+            ],
+            function () {
+                return Course::all()->pluck('title', 'id')->toArray();
+            },
+            function ($value) {
+                CRUD::addClause('where', 'course_id', $value);
+            }
+        );
+
+        // Filter by student
+        CRUD::addFilter(
+            [
+                'name' => 'user_id',
+                'type' => 'select2',
+                'label' => 'Filter by Student',
+            ],
+            function () {
+                return User::all()->pluck('name', 'id')->toArray();
+            },
+            function ($value) {
+                CRUD::addClause('where', 'user_id', $value);
+            }
+        );
     }
 
     /**
@@ -85,7 +140,6 @@ class EnrollmentCrudController extends CrudController
             'model'     => \App\Models\Course::class,  // related model
             'attribute' => 'title',                    // field to show in dropdown
         ]);
-
     }
 
     /**

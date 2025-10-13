@@ -47,7 +47,26 @@ class UserCrudController extends CrudController
     protected function setupListOperation()
     {
         CRUD::setFromDb(); // set columns from db columns.
-
+        // add filters by role
+        CRUD::addFilter(
+            [
+                'name' => 'role',
+                'type' => 'select2',
+                'label' => 'Role',
+            ],
+            function () {
+                // Return the options for the dropdown
+                return [
+                    'student' => 'Student',
+                    'teacher' => 'Teacher',
+                    'admin' => 'Admin',
+                ];
+            },
+            function ($value) {
+                // Apply the filter
+                CRUD::addClause('where', 'role', $value);
+            }
+        );
         /**
          * Columns can be defined using the fluent syntax:
          * - CRUD::column('price')->type('number');

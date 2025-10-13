@@ -6,6 +6,7 @@ use App\Http\Requests\CourseRequest;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Backpack\CRUD\app\Library\Widget;
@@ -43,7 +44,60 @@ class CourseCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::setFromDb(); // set columns from db columns.
+        // Default columns
+        CRUD::column('title');
+        CRUD::column('description');
+        CRUD::column('created_at');
+
+        CRUD::addColumn([
+            'name' => 'author',
+            'label' => 'Author',
+            'type' => 'relationship',
+            'attribute' => 'name',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url("user/{$related_key}/show");
+                },
+            ],
+        ]);
+
+        // add filtering by title
+        // CRUD::addFilter(
+        //     [
+        //         'type' => 'text',
+        //         'name' => 'title',
+        //         'label' => 'Title',
+        //     ],
+        //     false,
+        //     function ($value) {
+        //         // Apply filter
+        //         CRUD::addClause('where', 'title', 'LIKE', "%$value%");
+        //     }
+        // );
+
+        // // add filtering by description
+        // CRUD::addFilter([
+        //     'type' => 'text',
+        //     'name' => 'description',
+        //     'label' => 'Description',
+        // ], false, function ($value) {
+        //     CRUD::addClause('where', 'description', 'LIKE', "%$value%");
+        // });
+        
+        // add filtering by author name
+        CRUD::addFilter(
+            [
+                'name' => 'author_id',
+                'type' => 'select2',
+                'label' => 'Author'
+            ],
+            function(){
+                return User::where('role','teacher')->pluck('name','id')->toArray();
+            },
+            function ($value) {
+                CRUD::addClause('where', 'author_id', $value);
+            }
+        );
     }
 
     /**
