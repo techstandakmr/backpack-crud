@@ -58,20 +58,20 @@ class LessonCrudController extends CrudController
         ]);
 
         // add filters
-        // CRUD::addFilter([
-        //     'name' => 'title',
-        //     'type' => 'text',
-        //     'label' => 'Filter by title'
-        // ], false, function ($value) {
-        //     CRUD::addClause('where', 'title', 'like', "%$value%");
-        // });
-        // CRUD::addFilter([
-        //     'name' => 'content',
-        //     'type' => 'text',
-        //     'label' => 'Filter by content'
-        // ], false, function ($value) {
-        //     CRUD::addClause('where', 'content', 'like', "%$value%");
-        // });
+        CRUD::addFilter([
+            'name' => 'title',
+            'type' => 'text',
+            'label' => 'Filter by title'
+        ], false, function ($value) {
+            CRUD::addClause('where', 'title', 'like', "%$value%");
+        });
+        CRUD::addFilter([
+            'name' => 'content',
+            'type' => 'text',
+            'label' => 'Filter by content'
+        ], false, function ($value) {
+            CRUD::addClause('where', 'content', 'like', "%$value%");
+        });
 
         CRUD::addFilter(
             [

@@ -67,6 +67,13 @@ class UserCrudController extends CrudController
                 CRUD::addClause('where', 'role', $value);
             }
         );
+        CRUD::addFilter([
+            'name' => 'name',
+            'type' => 'text',
+            'label' => 'Name'
+        ], false, function ($value) {
+            CRUD::addClause('where', 'name', 'like', "%$value%");
+        });
         /**
          * Columns can be defined using the fluent syntax:
          * - CRUD::column('price')->type('number');

@@ -64,6 +64,21 @@ class ResourceCrudController extends CrudController
                 }
             ]
         ]);
+        // add filters 
+        CRUD::addFilter([
+            'name' => 'name',
+            'type' => 'text',
+            'label' => 'Filter by name'
+        ],false,function($value){
+            CRUD::addClause('where','name','like',"%$value%");
+        });
+        CRUD::addFilter([
+            'name' => 'url',
+            'type' => 'text',
+            'label' => 'Filter by url'
+        ],false,function($value){
+            CRUD::addClause('where','url','like',"%$value%");
+        });
         CRUD::addFilter(
             [
                 'name' => 'lesson_id',

@@ -81,6 +81,7 @@ class EnrollmentCrudController extends CrudController
                 },
             ],
         ]);
+        // add filters
         CRUD::addFilter(
             [
                 'name' => 'course_id',
@@ -109,6 +110,24 @@ class EnrollmentCrudController extends CrudController
                 CRUD::addClause('where', 'user_id', $value);
             }
         );
+        CRUD::addFilter([
+            'name' => 'phone',
+            'type' => 'text',
+            'label' => 'Filter by phone'
+        ], false, function ($value) {
+            CRUD::addClause('whereHas', 'user', function ($q) use ($value) {
+                $q->where('phone', 'like', '%' . $value . '%');
+            });
+        });
+        CRUD::addFilter([
+            'name' => 'email',
+            'type' => 'text',
+            'label' => 'Filter by email'
+        ], false, function ($value) {
+            CRUD::addClause('whereHas', 'user', function ($q) use ($value) {
+                $q->where('email', 'like', '%' . $value . '%');
+            });
+        });
     }
 
     /**
