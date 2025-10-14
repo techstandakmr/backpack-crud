@@ -192,6 +192,12 @@ class EnrollmentCrudController extends CrudController
             'attribute' => 'title',      // field from related Lesson model
             'label'     => 'Course',     // optional: nicer label
         ]);
+         CRUD::modifyColumn('user_id', [
+            'type'      => 'select',
+            'entity'    => 'user',
+            'attribute' => 'name',     
+            'label'     => 'Student',     
+        ]);
     }
     public function destroy($id)
     {
