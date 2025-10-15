@@ -9,6 +9,9 @@ use App\Http\Controllers\Admin\ResourceCrudController;
 use App\Http\Controllers\Admin\UserCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxCourseCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxLessonCrudController;
+use App\Http\Controllers\Admin\Ajax\AjaxResourceCrudController;
+use App\Http\Controllers\Admin\Ajax\AjaxEnrollmentCrudController;
+use App\Http\Controllers\Admin\Ajax\AjaxUserCrudController;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -54,22 +57,43 @@ Route::group([
     Route::get('user/{id}/export-csv', [UserCrudController::class, 'exportCsv'])->name('user.export.csv');
     Route::get('user/{id}/export-excel', [UserCrudController::class, 'exportExcel'])->name('user.export.excel');
 
-    Route::resource('ajax-courses', AjaxCourseCrudController::class)->names([
-        'index' => 'ajax-courses.index',
-        'create' => 'ajax-courses.create',
-        'store' => 'ajax-courses.store',
-        // 'show' => 'ajax-courses.show',
-        // 'edit' => 'ajax-courses.edit',
-        'update' => 'ajax-courses.update',
-        'destroy' => 'ajax-courses.destroy',
+    // custom CRUD using AJAX
+    Route::resource('ajax-course', AjaxCourseCrudController::class)->names([
+        'index' => 'ajax-course.index',
+        'create' => 'ajax-course.create',
+        'store' => 'ajax-course.store',
+        'update' => 'ajax-course.update',
+        'destroy' => 'ajax-course.destroy',
     ]);
-    Route::resource('ajax-lessons', AjaxLessonCrudController::class)->names([
-        'index' => 'ajax-lessons.index',
-        'create' => 'ajax-lessons.create',
-        'store' => 'ajax-lessons.store',
-        // 'show' => 'ajax-lessons.show',
-        // 'edit' => 'ajax-lessons.edit',
-        'update' => 'ajax-lessons.update',
-        'destroy' => 'ajax-lessons.destroy',
+    Route::resource('ajax-lesson', AjaxLessonCrudController::class)->names([
+        'index' => 'ajax-lesson.index',
+        'create' => 'ajax-lesson.create',
+        'store' => 'ajax-lesson.store',
+        'update' => 'ajax-lesson.update',
+        'destroy' => 'ajax-lesson.destroy',
+    ]);
+    
+    Route::resource('ajax-resource', AjaxResourceCrudController::class)->names([
+        'index' => 'ajax-resource.index',
+        'create' => 'ajax-resource.create',
+        'store' => 'ajax-resource.store',
+        'update' => 'ajax-resource.update',
+        'destroy' => 'ajax-resource.destroy',
+    ]);
+
+    Route::resource('ajax-enrollment', AjaxEnrollmentCrudController::class)->names([
+        'index' => 'ajax-enrollment.index',
+        'create' => 'ajax-enrollment.create',
+        'store' => 'ajax-enrollment.store',
+        'update' => 'ajax-enrollment.update',
+        'destroy' => 'ajax-enrollment.destroy',
+    ]);
+
+    Route::resource('ajax-user', AjaxUserCrudController::class)->names([
+        'index' => 'ajax-user.index',
+        'create' => 'ajax-user.create',
+        'store' => 'ajax-user.store',
+        'update' => 'ajax-user.update',
+        'destroy' => 'ajax-user.destroy',
     ]);
 });
