@@ -31,7 +31,6 @@
         <table class="table table-bordered">
             <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
                     <th>Title</th>
                     <th>Description</th>
                     <th>Author</th>
@@ -53,6 +52,11 @@
             const resetBtn = document.getElementById('resetForm');
             const idInput = document.getElementById('course_id');
             const errorBox = document.getElementById('errorBox');
+
+            // create pagination container
+            const paginationDiv = document.createElement('div');
+            paginationDiv.classList.add('mt-3', 'd-flex', 'justify-content-center');
+            courseForm.parentElement.appendChild(paginationDiv);
 
             // Helper to show error messages above form
             function showErrors(messages = []) {
@@ -79,9 +83,9 @@
                 resetForm();
             });
 
-            // Load courses + teachers
-            function loadCourses(search = '', author = '') {
-                fetch(`{{ route('ajax-courses.index') }}?search=${encodeURIComponent(search)}&author=${author}`, {
+            // Load courses with pagination
+            window.loadCourses = function(search = '', author = '', page = 1) {
+                fetch(`{{ route('ajax-course.index') }}?search=${encodeURIComponent(search)}&author=${author}&page=${page}`, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
                         }
@@ -101,30 +105,57 @@
 
                         // Populate table
                         tableBody.innerHTML = '';
-                        if (data.courses.length === 0) {
+                        if (!data.courses.length) {
                             tableBody.innerHTML =
                                 `<tr><td colspan="5" class="text-center text-muted">No courses found.</td></tr>`;
+                            paginationDiv.innerHTML = '';
                             return;
                         }
 
                         data.courses.forEach(course => {
                             tableBody.innerHTML += `
-                        <tr>
-                            <td>${course.id}</td>
-                            <td>${course.title}</td>
-                            <td>${course.description.slice(0, 40)}</td>
-                            <td><a href="/admin/user/${course.author.id}/show">${course.author.name}</a></td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="editCourse(${course.id}, '${course.title}', \`${course.description}\`, ${course.author_id})">Edit</button>
-                                <a href="/admin/course/${course.id}/show" class="btn btn-sm btn-secondary">View</a>
-                                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${course.id})">Delete</button>
-                            </td>
-                        </tr>`;
+                    <tr>
+                        <td>${course.title}</td>
+                        <td>${course.description.slice(0, 40)}</td>
+                        <td><a href="/admin/user/${course.author.id}/show">${course.author.name}</a></td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editCourse(${course.id}, '${course.title}', \`${course.description}\`, ${course.author_id})">Edit</button>
+                            <a href="/admin/course/${course.id}/show" class="btn btn-sm btn-secondary">View</a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCourse(${course.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                        });
+
+                        // Pagination
+                        const {
+                            current_page,
+                            last_page
+                        } = data.pagination;
+                        paginationDiv.innerHTML = '';
+                        let paginationHTML = `<nav><ul class="pagination">`;
+
+                        for (let i = 1; i <= last_page; i++) {
+                            paginationHTML += `
+                    <li class="page-item ${i === current_page ? 'active' : ''}">
+                        <button class="page-link" data-page="${i}">${i}</button>
+                    </li>`;
+                        }
+
+                        paginationHTML += `</ul></nav>`;
+                        paginationDiv.innerHTML = paginationHTML;
+
+                        // attach click listeners to pagination buttons
+                        paginationDiv.querySelectorAll('.page-link').forEach(btn => {
+                            btn.addEventListener('click', e => {
+                                const page = e.target.getAttribute('data-page');
+                                loadCourses(searchInput.value.trim(), filterAuthor.value,
+                                    page);
+                            });
                         });
                     });
             }
 
-            // --- Filtering events ---
+            // Filtering events
             let searchTimer;
             searchInput.addEventListener('input', e => {
                 clearTimeout(searchTimer);
@@ -147,7 +178,7 @@
                 addBtn.textContent = 'Update Course';
                 courseForm.style.display = 'block';
                 toggleFormBtn.textContent = 'Hide Course Form';
-                showErrors(); // clear errors
+                showErrors();
             };
 
             // Reset form
@@ -158,7 +189,7 @@
                 document.getElementById('description').value = '';
                 document.getElementById('author_id').value = '';
                 addBtn.textContent = 'Add Course';
-                showErrors(); // clear errors
+                showErrors();
             }
             resetBtn.addEventListener('click', function() {
                 resetForm();
@@ -181,12 +212,11 @@
                     return;
                 }
 
-                showErrors(); // clear old errors
+                showErrors();
 
                 const method = course_id ? 'PUT' : 'POST';
-                const url = course_id ?
-                    `/admin/ajax-courses/${course_id}` :
-                    `{{ route('ajax-courses.store') }}`;
+                const url = course_id ? `/admin/ajax-course/${course_id}` :
+                    `{{ route('ajax-course.store') }}`;
 
                 addBtn.disabled = true;
                 addBtn.textContent = course_id ? 'Updating...' : 'Adding...';
@@ -210,7 +240,7 @@
                         addBtn.textContent = course_id ? 'Update Course' : 'Add Course';
 
                         if (data.success) {
-                            loadCourses();
+                            loadCourses(searchInput.value.trim(), filterAuthor.value);
                             resetBtn.click();
                             if (window.toastr) toastr.success(course_id ? 'Course updated!' :
                                 'Course added!');
@@ -228,10 +258,11 @@
                         if (window.toastr) toastr.error('A network or server error occurred.');
                     });
             });
+
             // Delete course
             window.deleteCourse = function(id) {
                 if (window.confirm('Are you sure?')) {
-                    fetch(`/admin/ajax-courses/${id}`, {
+                    fetch(`/admin/ajax-course/${id}`, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -241,7 +272,7 @@
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                loadCourses();
+                                loadCourses(searchInput.value.trim(), filterAuthor.value);
                                 if (window.toastr) toastr.success('Course deleted!');
                             } else {
                                 const msg = data.message || 'Something went wrong!';
@@ -251,7 +282,7 @@
                         });
                 }
             }
-            searchInput.addEventListener('input', e => loadCourses(e.target.value));
+
             loadCourses();
         });
     </script>

@@ -14,8 +14,9 @@ class AjaxCourseCrudController extends Controller
         if ($request->ajax()) {
             $search = $request->get('search');
             $authorId = $request->get('author');
-
-            $courses = Course::with(['author', 'lessons'])
+            $perPage = 10;
+            $page = $request->get('page', 1);
+            $query = Course::with(['author', 'lessons'])
                 ->when($search, function ($query, $search) {
                     $query->where(function ($q) use ($search) {
                         $q->where('title', 'like', "%{$search}%")
@@ -29,17 +30,21 @@ class AjaxCourseCrudController extends Controller
                         $query->where('author_id', $authorId);
                     }
                 })
-                ->orderBy('id', 'desc')
-                ->get();
-
+                ->orderBy('id', 'desc');
+            $courses = $query->paginate($perPage, ['*'], 'page', $page);
             $authors = User::where('role', 'teacher')->get(['id', 'name']);
 
             return response()->json([
-                'courses' => $courses,
+                'courses' => $courses->items(),
+                'pagination' => [
+                    'current_page' => $courses->currentPage(),
+                    'last_page' => $courses->lastPage(),
+                    'total' => $courses->total(),
+                ],
                 'authors' => $authors,
             ]);
         };
-        return view('admin.ajax.courses.index');
+        return view('admin.ajax.course.index');
     }
     public function store(Request $request)
     {
