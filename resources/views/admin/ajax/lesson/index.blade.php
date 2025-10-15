@@ -1,6 +1,7 @@
 @extends(backpack_view('blank'))
 
 @section('content')
+<x-toastr />
 <div class="container mt-4">
     <h3>AJAX Lessons CRUD</h3>
 
@@ -31,7 +32,6 @@
     <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
-                <th>ID</th>
                 <th>Title</th>
                 <th>Content</th>
                 <th>Course</th>
@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleFormBtn = document.getElementById('toggleFormBtn');
     const lessonForm = document.getElementById('lessonForm');
     const tableBody = document.getElementById('lessonTable');
+    const paginationDiv = document.createElement('div');
+    paginationDiv.classList.add('mt-3', 'd-flex', 'justify-content-center');
+    lessonForm.parentElement.appendChild(paginationDiv);
     const searchInput = document.getElementById('search');
     const filterCourse = document.getElementById('filterCourse');
     const addBtn = document.getElementById('addLesson');
@@ -71,8 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleFormBtn.textContent = lessonForm.style.display === 'block' ? 'Hide Lesson Form' : 'Show Lesson Form';
     });
 
-    function loadLessons(search = '', course = '') {
-        fetch(`{{ route('ajax-lessons.index') }}?search=${encodeURIComponent(search)}&course=${course}`, {
+    // load lessons with pagination
+    window.loadLessons = function(search = '', course = '', page = 1) {
+        fetch(`{{ route('ajax-lesson.index') }}?search=${encodeURIComponent(search)}&course=${course}&page=${page}`, {
             headers: {'X-Requested-With': 'XMLHttpRequest'}
         })
         .then(res => res.json())
@@ -89,15 +93,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!data.lessons.length) {
                 tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No lessons found.</td></tr>`;
+                paginationDiv.innerHTML = '';
                 return;
             }
 
             data.lessons.forEach(l => {
                 tableBody.innerHTML += `
                     <tr>
-                        <td>${l.id}</td>
                         <td>${l.title}</td>
-                        <td>${l.content.slice(0,20)}</td>
+                        <td>${l.content.slice(0,40)}</td>
                         <td><a href="/admin/course/${l.course_id}/show">${l.course?.title || '-'}</a></td>
                         <td>
                             <a href="/admin/lesson/${l.id}/show" class="btn btn-sm btn-secondary">View</a>
@@ -106,9 +110,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                     </tr>`;
             });
+
+            // Pagination buttons
+            const { current_page, last_page } = data.pagination;
+            paginationDiv.innerHTML = '';
+            let paginationHTML = `<nav><ul class="pagination">`;
+            for (let i = 1; i <= last_page; i++) {
+                paginationHTML += `<li class="page-item ${i === current_page ? 'active' : ''}">
+                    <button class="page-link" onclick="loadLessons('${searchInput.value.trim()}', '${filterCourse.value}', ${i})">${i}</button>
+                </li>`;
+            }
+            paginationHTML += `</ul></nav>`;
+            paginationDiv.innerHTML = paginationHTML;
         });
     }
 
+    // edit lesson
     window.editLesson = (id, title, content, course_id) => {
         idInput.value = id;
         document.getElementById('title').value = title;
@@ -119,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lessonForm.style.display = 'block';
         toggleFormBtn.textContent = 'Hide Lesson Form';
         showErrors();
-    }
+    };
 
     function resetForm() {
         idInput.value = '';
@@ -148,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showErrors();
 
         const method = lesson_id ? 'PUT' : 'POST';
-        const url = lesson_id ? `/admin/ajax-lessons/${lesson_id}` : `{{ route('ajax-lessons.store') }}`;
+        const url = lesson_id ? `/admin/ajax-lesson/${lesson_id}` : `{{ route('ajax-lesson.store') }}`;
 
         addBtn.disabled = true;
         addBtn.textContent = lesson_id ? 'Updating...' : 'Adding...';
@@ -177,20 +194,21 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => {
             console.error(err);
             addBtn.disabled = false;
-            addBtn.textContent = lesson_id ? 'Update Lesson' : 'Add Lesson';
             showErrors(['Network/server error']);
         });
     });
 
     window.deleteLesson = id => {
         if (!confirm('Are you sure?')) return;
-        fetch(`/admin/ajax-lessons/${id}`, {
+        fetch(`/admin/ajax-lesson/${id}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest'
             }
-        }).then(res => res.json()).then(data => {
+        })
+        .then(res => res.json())
+        .then(data => {
             if (data.success) {
                 loadLessons(searchInput.value, filterCourse.value);
                 if (window.toastr) toastr.success('Lesson deleted!');
@@ -198,14 +216,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 showErrors([data.message || 'Something went wrong']);
             }
         });
-    }
+    };
 
     let searchTimer;
     searchInput.addEventListener('input', e => {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
-            loadLessons(e.target.value.trim(), filterCourse.value);
-        }, 300);
+        searchTimer = setTimeout(() => loadLessons(e.target.value.trim(), filterCourse.value), 300);
     });
 
     filterCourse.addEventListener('change', e => loadLessons(searchInput.value, e.target.value));
@@ -213,4 +229,5 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLessons();
 });
 </script>
+
 @endsection
