@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResourceCrudController;
 use App\Http\Controllers\Admin\UserCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxCourseCrudController;
+use App\Http\Controllers\Admin\Ajax\AjaxLessonCrudController;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -61,5 +62,14 @@ Route::group([
         // 'edit' => 'ajax-courses.edit',
         'update' => 'ajax-courses.update',
         'destroy' => 'ajax-courses.destroy',
+    ]);
+    Route::resource('ajax-lessons', AjaxLessonCrudController::class)->names([
+        'index' => 'ajax-lessons.index',
+        'create' => 'ajax-lessons.create',
+        'store' => 'ajax-lessons.store',
+        // 'show' => 'ajax-lessons.show',
+        // 'edit' => 'ajax-lessons.edit',
+        'update' => 'ajax-lessons.update',
+        'destroy' => 'ajax-lessons.destroy',
     ]);
 });
