@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\LessonCrudController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResourceCrudController;
 use App\Http\Controllers\Admin\UserCrudController;
-
+use App\Http\Controllers\Admin\Ajax\AjaxCourseCrudController;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -52,4 +52,14 @@ Route::group([
     Route::get('user/{id}/export-pdf', [UserCrudController::class, 'exportPdf'])->name('user.export.pdf');
     Route::get('user/{id}/export-csv', [UserCrudController::class, 'exportCsv'])->name('user.export.csv');
     Route::get('user/{id}/export-excel', [UserCrudController::class, 'exportExcel'])->name('user.export.excel');
+
+    Route::resource('ajax-courses', AjaxCourseCrudController::class)->names([
+        'index' => 'ajax-courses.index',
+        'create' => 'ajax-courses.create',
+        'store' => 'ajax-courses.store',
+        // 'show' => 'ajax-courses.show',
+        // 'edit' => 'ajax-courses.edit',
+        'update' => 'ajax-courses.update',
+        'destroy' => 'ajax-courses.destroy',
+    ]);
 });
