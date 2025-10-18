@@ -21,45 +21,56 @@ class FileExtractController extends Controller
 
         $filePath = $request->file('file')->store('uploads', 'public');
         $absolutePath = storage_path('app/public/' . $filePath);
-        // build the command using full Python path
+
         $pythonPath = 'C:\\Users\\MK\\AppData\\Local\\Programs\\Python\\Python310\\python.exe';
         $scriptPath = base_path('python/extract_text.py');
 
-        // escape paths properly for Windows shell
-        // $command = "\"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
-        // good
-        $command = "set PYTHONIOENCODING=utf-8 && \"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
-
-
-        // run python and capture output
-        // $output = shell_exec($command);
-
-        // if (!$output) {
-        //     return response()->json(['status' => 'error', 'error' => 'No output from Python script.']);
-        // }
-
-        // // return result
-        // return response()->json([
-        //     'status' => 'success',
-        //     'text' => $output
-        // ]);
-
-
+        $command = "\"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
 
         $output = shell_exec($command);
-        $data = json_decode($output, true);
-        if (isset($data['table'])) {
-            return response()->json(['status' => 'success', 'table' => $data['table'], 'raw' => $data['raw_text'] ?? null]);
+
+        if (!$output) {
+            return response()->json(['status' => 'error', 'error' => 'No output from Python script.']);
         }
 
-        if (isset($data['data'])) {
-            return response()->json(['status' => 'success', 'data' => $data['data'], 'raw' => $data['raw_text'] ?? null]);
+        $jsonOutput = json_decode($output, true);
+
+        if (isset($jsonOutput['error'])) {
+            return response()->json(['status' => 'error', 'error' => $jsonOutput['error']]);
         }
 
         return response()->json([
             'status' => 'success',
-            'raw' => $data['raw_text'] ?? '',
-            'message' => $data['message'] ?? 'No structured data found.',
+            'tables' => $jsonOutput['tables'] // send structured table data
         ]);
     }
+
+    // public function extract(Request $request)
+    // {
+    //     if (!$request->hasFile('file')) {
+    //         return response()->json(['status' => 'error', 'error' => 'No PDF uploaded.']);
+    //     }
+
+    //     $filePath = $request->file('file')->store('uploads', 'public');
+    //     $absolutePath = storage_path('app/public/' . $filePath);
+    //     // build the command using full Python path
+    //     $pythonPath = 'C:\\Users\\MK\\AppData\\Local\\Programs\\Python\\Python310\\python.exe';
+    //     $scriptPath = base_path('python/extract_text.py');
+
+    //     // escape paths properly for Windows shell
+    //     $command = "\"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
+
+    //     // run python and capture output
+    //     $output = shell_exec($command);
+
+    //     if (!$output) {
+    //         return response()->json(['status' => 'error', 'error' => 'No output from Python script.']);
+    //     }
+
+    //     // return result
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'text' => $output
+    //     ]);
+    // }
 }

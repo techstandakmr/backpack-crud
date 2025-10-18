@@ -24,15 +24,15 @@
             <div id="loading" class="mt-3 text-info" style="display:none;"> Extracting text, please wait...</div>
         </form>
 
-        <div id="result" class="card mt-4 p-3 bg-white shadow-sm overflow-x-auto" style="display:none;">
+        <div id="result" class="card mt-4 p-3 bg-white shadow-sm"
+            style="display:none; max-height:500px; overflow-y:auto;">
             <h5>Extracted Data</h5>
-            <table class="table table-bordered table-striped mt-2 text-dark" id="dataTable" style="display:none;">
+            <table class="table table-bordered table-striped mt-2" id="dataTable" style="display:none;">
                 <thead>
                     <tr id="tableHeader"></tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
-            <div id="rawText" class="mt-3 text-dark" style="white-space: pre-wrap;"></div>
             <div id="noData" class="text-muted">No structured data found.</div>
         </div>
     </div>
@@ -76,42 +76,11 @@
             filePreview.src = '';
             imagePreview.src = '';
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('result').style.display = 'none';
+            const result = document.getElementById('result');
+            const preResult = document.getElementById('preResult');
+            result.style.display = 'none';
+            preResult.textContent = '';
         });
-
-
-        const renderTable = (data) => {
-            if (data.table) {
-                const table = document.getElementById('dataTable');
-                const header = document.getElementById('tableHeader');
-                const body = document.getElementById('tableBody');
-                const rows = data.table;
-
-                header.innerHTML = '';
-                body.innerHTML = '';
-
-                const keys = Object.keys(rows[0]);
-                keys.forEach(k => {
-                    const th = document.createElement('th');
-                    th.textContent = k.replace(/_/g, ' ');
-                    header.appendChild(th);
-                });
-
-                rows.forEach(row => {
-                    const tr = document.createElement('tr');
-                    keys.forEach(k => {
-                        const td = document.createElement('td');
-                        td.textContent = row[k];
-                        tr.appendChild(td);
-                    });
-                    body.appendChild(tr);
-                });
-
-                table.style.display = 'table';
-                document.getElementById('noData').style.display = 'none';
-                return;
-            }
-        };
 
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -119,34 +88,67 @@
             const formData = new FormData(e.target);
             const loading = document.getElementById('loading');
             const result = document.getElementById('result');
+            const tableHeader = document.getElementById('tableHeader');
+            const tableBody = document.getElementById('tableBody');
+            const dataTable = document.getElementById('dataTable');
+            const noData = document.getElementById('noData');
+
             loading.style.display = 'block';
             result.style.display = 'none';
+            dataTable.style.display = 'none';
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+            noData.style.display = 'none';
 
             try {
                 const response = await fetch('{{ route('file.text.extract') }}', {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
                     },
                     body: formData
                 });
 
                 const data = await response.json();
+                console.log(data)
                 loading.style.display = 'none';
                 result.style.display = 'block';
 
-                if (data.status === 'success') {
-                    renderTable(data);
-                    if (data.raw) {
-    document.getElementById('rawText').innerText = data.raw;
-}
+                if (data.status === 'success' && data.tables.length > 0) {
+                    data.tables.forEach((table, tIndex) => {
+                        // If first table, set header
+                        if (tIndex === 0 && table.length > 0) {
+                            tableHeader.innerHTML = '';
+                            table[0].forEach(header => {
+                                const th = document.createElement('th');
+                                th.textContent = header;
+                                tableHeader.appendChild(th);
+                            });
+                        }
 
+                        // Add rows
+                        table.forEach((row, rIndex) => {
+                            const tr = document.createElement('tr');
+                            row.forEach(cell => {
+                                const td = document.createElement('td');
+                                td.textContent = cell;
+                                tr.appendChild(td);
+                            });
+                            tableBody.appendChild(tr);
+                        });
+                    });
+
+                    dataTable.style.display = 'table';
                 } else {
-                    document.getElementById('noData').textContent = data.error || 'Extraction failed';
+                    noData.style.display = 'block';
                 }
+
             } catch (err) {
                 loading.style.display = 'none';
-                alert('Error: ' + err.message);
+                result.style.display = 'block';
+                noData.textContent = 'An error occurred: ' + err.message;
+                noData.style.display = 'block';
             }
         });
     </script>
