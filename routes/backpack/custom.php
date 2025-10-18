@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\Ajax\AjaxLessonCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxResourceCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxEnrollmentCrudController;
 use App\Http\Controllers\Admin\Ajax\AjaxUserCrudController;
+use App\Http\Controllers\FileExtractController;
+
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -72,7 +74,7 @@ Route::group([
         'update' => 'ajax-lesson.update',
         'destroy' => 'ajax-lesson.destroy',
     ]);
-    
+
     Route::resource('ajax-resource', AjaxResourceCrudController::class)->names([
         'index' => 'ajax-resource.index',
         'create' => 'ajax-resource.create',
@@ -96,4 +98,8 @@ Route::group([
         'update' => 'ajax-user.update',
         'destroy' => 'ajax-user.destroy',
     ]);
+
+
+    Route::get('/file-uploader', [FileExtractController::class, 'index']);
+    Route::post('/extract-file-text', [FileExtractController::class, 'extract'])->name('file.text.extract');
 });

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4">📄 File Text Extractor</h2>
+    <h2 class="mb-4">File Text Extractor</h2>
 
     <form id="fileForm" class="card p-4 shadow-sm bg-white" enctype="multipart/form-data">
         <div class="form-group mb-3">
@@ -19,7 +19,7 @@
             <button type="submit" class="btn btn-primary">Extract Text</button>
             <button type="button" id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
         </div>
-        <div id="loading" class="mt-3 text-info" style="display:none;">⏳ Extracting text, please wait...</div>
+        <div id="loading" class="mt-3 text-info" style="display:none;"> Extracting text, please wait...</div>
     </form>
 
     <div id="result" class="card mt-4 p-3 bg-white shadow-sm" style="display:none; max-height:500px; overflow-y:auto;">
@@ -40,7 +40,7 @@ fileInput.addEventListener('change', function(e) {
 
     // Only allow images and PDFs
     if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        alert('❌ Only PDF and image files are allowed.');
+        alert('Only PDF and image files are allowed.');
         fileInput.value = '';
         return;
     }
@@ -100,12 +100,12 @@ document.getElementById('fileForm').addEventListener('submit', async function(e)
         if (data.status === 'success') {
             preResult.textContent = data.text;
         } else {
-            preResult.textContent = '❌ Failed to extract text: ' + (data.error || '');
+            preResult.textContent = 'Failed to extract text: ' + (data.error || '');
         }
     } catch (err) {
         loading.style.display = 'none';
         result.style.display = 'block';
-        preResult.textContent = '❌ An error occurred: ' + err.message;
+        preResult.textContent = ' An error occurred: ' + err.message;
     }
 });
 </script>
