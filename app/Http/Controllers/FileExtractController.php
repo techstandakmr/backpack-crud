@@ -9,7 +9,8 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 class FileExtractController extends Controller
 {
     // index
-    public function index(){
+    public function index()
+    {
         return view('file-uploader');
     }
     public function extract(Request $request)
@@ -17,7 +18,7 @@ class FileExtractController extends Controller
         if (!$request->hasFile('file')) {
             return response()->json(['status' => 'error', 'error' => 'No PDF uploaded.']);
         }
-        
+
         $filePath = $request->file('file')->store('uploads', 'public');
         $absolutePath = storage_path('app/public/' . $filePath);
         // build the command using full Python path
@@ -25,19 +26,40 @@ class FileExtractController extends Controller
         $scriptPath = base_path('python/extract_text.py');
 
         // escape paths properly for Windows shell
-        $command = "\"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
+        // $command = "\"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
+        // good
+        $command = "set PYTHONIOENCODING=utf-8 && \"$pythonPath\" \"$scriptPath\" \"$absolutePath\"";
+
 
         // run python and capture output
-        $output = shell_exec($command);
+        // $output = shell_exec($command);
 
-        if (!$output) {
-            return response()->json(['status' => 'error', 'error' => 'No output from Python script.']);
+        // if (!$output) {
+        //     return response()->json(['status' => 'error', 'error' => 'No output from Python script.']);
+        // }
+
+        // // return result
+        // return response()->json([
+        //     'status' => 'success',
+        //     'text' => $output
+        // ]);
+
+
+
+        $output = shell_exec($command);
+        $data = json_decode($output, true);
+        if (isset($data['table'])) {
+            return response()->json(['status' => 'success', 'table' => $data['table'], 'raw' => $data['raw_text'] ?? null]);
         }
 
-        // return result
+        if (isset($data['data'])) {
+            return response()->json(['status' => 'success', 'data' => $data['data'], 'raw' => $data['raw_text'] ?? null]);
+        }
+
         return response()->json([
             'status' => 'success',
-            'text' => $output
+            'raw' => $data['raw_text'] ?? '',
+            'message' => $data['message'] ?? 'No structured data found.',
         ]);
     }
 }
