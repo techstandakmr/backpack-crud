@@ -1,4 +1,5 @@
-# # this is what I tried fisrt, resulting the extracted text and displaying them as raw text    
+# this is what I tried fisrt, resulting the extracted text and displaying them as raw text    
+# raw text based
 # import sys
 # import fitz # PyMuPDF
 # from PIL import Image
@@ -50,354 +51,263 @@
 #         sys.exit(1)
 
 
-#surya OCR
-# from surya.table_rec import TableRecPredictor
-# from PIL import Image
-# import fitz  # PyMuPDF to read PDFs
-# import csv
-
-# # Function to convert PDF pages to images
-# def pdf_to_images(pdf_path):
-#     images = []
-#     pdf_doc = fitz.open(pdf_path)
-#     for page_num in range(len(pdf_doc)):
-#         page = pdf_doc[page_num]
-#         pix = page.get_pixmap(dpi=300)
-#         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-#         images.append(img)
-#     return images
-
-# # Path to your file
-# file_path = "777.pdf"  # or an image file
-
-# # Convert PDF to images (skip if your file is an image)
-# if file_path.lower().endswith(".pdf"):
-#     images = pdf_to_images(file_path)
-# else:
-#     images = [Image.open(file_path)]
-
-# # Initialize Surya Table Recognition
-# table_rec_predictor = TableRecPredictor()
-
-# all_tables = []
-
-# # Run table recognition on each page
-# for img in images:
-#     tables = table_rec_predictor([img])
-#     all_tables.extend(tables)
-
-# # Print tables (handle tuple cells)
-# for i, table in enumerate(all_tables):
-#     print(f"\nTable {i+1}:")
-#     for row in table.cells:
-#         # if cell is a tuple, text is at index 0
-#         print([cell[0] if isinstance(cell, tuple) else cell.text for cell in row])
-
-# # Save tables to CSV
-# for idx, table in enumerate(all_tables):
-#     csv_file = f"output_table_{idx+1}.csv"
-#     with open(csv_file, mode='w', newline='', encoding='utf-8') as f:
-#         writer = csv.writer(f)
-#         for row in table.cells:
-#             writer.writerow([cell[0] if isinstance(cell, tuple) else cell.text for cell in row])
-#     print(f"Saved Table {idx+1} to {csv_file}")
 
 
 
-
-
-# surya 
-# import sys
-# from surya.table_rec import TableRecPredictor
-# from PIL import Image
-# import fitz  # PyMuPDF to read PDFs
-# import json
-
-# def pdf_to_images(pdf_path):
-#     images = []
-#     pdf_doc = fitz.open(pdf_path)
-#     for page_num in range(len(pdf_doc)):
-#         page = pdf_doc[page_num]
-#         pix = page.get_pixmap(dpi=300)
-#         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-#         images.append(img)
-#     return images
-
-# def extract_tables(file_path):
-#     # Convert PDF to images or use image directly
-#     if file_path.lower().endswith(".pdf"):
-#         images = pdf_to_images(file_path)
-#     else:
-#         images = [Image.open(file_path)]
-
-#     table_rec_predictor = TableRecPredictor()
-#     all_tables = []
-
-#     for img in images:
-#         tables = table_rec_predictor([img])
-#         all_tables.extend(tables)
-
-#     tables_json = []
-
-#     for table in all_tables:
-#         table_rows = []
-#         for row in table.cells:
-#             row_texts = []
-#             for cell in row:
-#                 # Handle all possible cell formats
-#                 if isinstance(cell, tuple):
-#                     row_texts.append(cell[0])
-#                 elif hasattr(cell, "text_lines"):
-#                     row_texts.append(" ".join([line.strip() for line in cell.text_lines]))
-#                 elif hasattr(cell, "text"):
-#                     row_texts.append(cell.text.strip())
-#                 else:
-#                     row_texts.append(str(cell))
-#             table_rows.append(row_texts)
-#         tables_json.append(table_rows)
-
-#     return tables_json
-
-
-# if __name__ == "__main__":
-#     if len(sys.argv) < 2:
-#         print(json.dumps({"error": "No file path provided"}))
-#         sys.exit(1)
-
-#     file_path = sys.argv[1]
-#     try:
-#         tables_data = extract_tables(file_path)
-#         print(json.dumps({"tables": tables_data}))
-#     except Exception as e:
-#         print(json.dumps({"error": str(e)}))
-
-
-
-# surya text recognition
-# from PIL import Image
-# from surya.foundation import FoundationPredictor
-# from surya.recognition import RecognitionPredictor
-# from surya.detection import DetectionPredictor
-# import json
-# import fitz  # for PDFs
-
-# def pdf_to_images(pdf_path):
-#     images = []
-#     pdf_doc = fitz.open(pdf_path)
-#     for page_num in range(len(pdf_doc)):
-#         page = pdf_doc[page_num]
-#         pix = page.get_pixmap(dpi=300)
-#         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-#         images.append(img)
-#     return images
-
-# def extract_text(file_path):
-#     # Convert PDF to images
-#     if file_path.lower().endswith(".pdf"):
-#         images = pdf_to_images(file_path)
-#     else:
-#         images = [Image.open(file_path)]
-
-#     # Initialize Surya OCR
-#     foundation_predictor = FoundationPredictor()
-#     recognition_predictor = RecognitionPredictor(foundation_predictor)
-#     detection_predictor = DetectionPredictor()
-
-#     results = []
-
-#     for img in images:
-#         predictions = recognition_predictor([img], det_predictor=detection_predictor)
-#         page_text_lines = []
-
-#         for line in predictions[0].lines:  # predictions[0] is the first image/page
-#             # Each line has: text, confidence, polygon, bbox
-#             page_text_lines.append({
-#                 "text": line.text,
-#                 "confidence": line.confidence,
-#                 "bbox": line.bbox
-#             })
-#         results.append(page_text_lines)
-
-#     return results
-
-# if __name__ == "__main__":
-#     import sys
-#     if len(sys.argv) < 2:
-#         print(json.dumps({"error": "No file path provided"}))
-#         sys.exit(1)
-
-#     file_path = sys.argv[1]
-#     try:
-#         ocr_result = extract_text(file_path)
-#         print(json.dumps({"pages": ocr_result}))
-#     except Exception as e:
-#         print(json.dumps({"error": str(e)}))
-
-
-
-# surya Layout and reading order
-# from PIL import Image
-# from surya.foundation import FoundationPredictor
-# from surya.layout import LayoutPredictor
-# from surya.settings import settings
-# import fitz
-# import json
-# import sys
-# import gc
-
-# def extract_layout(file_path):
-#     """Run Surya layout detection on image or PDF page by page (memory-efficient)"""
-#     # Initialize layout predictor
-#     foundation = FoundationPredictor(checkpoint=settings.LAYOUT_MODEL_CHECKPOINT)
-#     layout_predictor = LayoutPredictor(foundation)
-
-#     results = []
-
-#     if file_path.lower().endswith(".pdf"):
-#         pdf_doc = fitz.open(file_path)
-#         for page_num in range(len(pdf_doc)):
-#             page = pdf_doc[page_num]
-
-#             # Reduce DPI to save memory
-#             pix = page.get_pixmap(dpi=120)
-#             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-
-#             layout_result = layout_predictor([img])[0]  # LayoutResult object
-
-#             page_items = []
-#             for box in layout_result.bboxes:
-#                 page_items.append({
-#                     "bbox": box.bbox,
-#                     "polygon": box.polygon,
-#                     "label": box.label,
-#                     "confidence": float(box.confidence),
-#                     "position": getattr(box, "position", None)
-#                 })
-
-#             results.append({"page": page_num + 1, "items": page_items})
-
-#             # Free memory
-#             del img
-#             gc.collect()
-
-#     else:
-#         img = Image.open(file_path)
-#         layout_result = layout_predictor([img])[0]
-
-#         page_items = []
-#         for box in layout_result.bboxes:
-#             page_items.append({
-#                 "bbox": box.bbox,
-#                 "polygon": box.polygon,
-#                 "label": box.label,
-#                 "confidence": float(box.confidence),
-#                 "position": getattr(box, "position", None)
-#             })
-
-#         results.append({"page": 1, "items": page_items})
-#         del img
-#         gc.collect()
-
-#     return results
-
-# if __name__ == "__main__":
-#     if len(sys.argv) < 2:
-#         print(json.dumps({"error": "No file path provided"}))
-#         sys.exit(1)
-
-#     file_path = sys.argv[1]
-#     try:
-#         layout_data = extract_layout(file_path)
-#         print(json.dumps({"layout": layout_data}, indent=2, ensure_ascii=False))
-#     except Exception as e:
-#         print(json.dumps({"error": str(e)}))
-
-
-
-
-# Table Recognition
-from PIL import Image
-from surya.table_rec import TableRecPredictor
-from surya.foundation import FoundationPredictor
-from surya.recognition import RecognitionPredictor
-from surya.detection import DetectionPredictor
-import fitz
-import json
+# table based
 import sys
-import gc
+import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
+import io
+import re
+import json
+import warnings
+import pandas as pd
+from typing import List, Dict, Tuple
 
-def pdf_to_images(pdf_path, dpi=150):
-    images = []
-    pdf_doc = fitz.open(pdf_path)
-    for page in pdf_doc:
-        pix = page.get_pixmap(dpi=dpi)
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        images.append(img)
-    return images
+# Suppress warnings
+warnings.filterwarnings('ignore')
 
-def extract_table_text(file_path):
-    # Initialize Surya predictors
-    foundation = FoundationPredictor()
-    recognition = RecognitionPredictor(foundation)
-    detection = DetectionPredictor()
-    table_rec = TableRecPredictor()
+# Tesseract path (Windows)
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-    results = []
+# Force UTF-8 stdout
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-    # Convert PDF or open image
-    if file_path.lower().endswith(".pdf"):
-        images = pdf_to_images(file_path)
-    else:
-        images = [Image.open(file_path)]
 
-    for page_num, img in enumerate(images):
-        # Detect tables
-        tables = table_rec([img])
-
-        page_data = []
-        for table_idx, table in enumerate(tables):
-            cells_data = []
-            for cell in table.cells:
-                # Crop cell image using bbox
-                x1, y1, x2, y2 = map(int, cell.bbox)
-                cell_img = img.crop((x1, y1, x2, y2))
-
-                # OCR the cell
-                text_result = recognition([cell_img], det_predictor=detection)
-                text_lines = [line.text for line in text_result[0].lines]
-                cell_text = " ".join(text_lines)
-
-                cells_data.append({
-                    "row_id": cell.row_id,
-                    "col_id": cell.col_id,
-                    "text": cell_text,
-                    "bbox": cell.bbox,
-                    "rowspan": getattr(cell, "rowspan", 1),
-                    "colspan": getattr(cell, "colspan", 1),
-                    "is_header": getattr(cell, "is_header", False)
-                })
-
-            page_data.append({
-                "table_idx": table_idx,
-                "cells": cells_data
+class PDFTableExtractor:
+    def __init__(self, pdf_path):
+        self.pdf_path = pdf_path
+        self.extracted_tables = []
+        
+    def extract_with_camelot(self):
+        """Try to extract tables using Camelot (works best with text-based PDFs)"""
+        try:
+            import camelot
+            
+            # Try lattice mode first (for bordered tables)
+            tables = camelot.read_pdf(self.pdf_path, pages='all', flavor='lattice')
+            if len(tables) == 0:
+                # Try stream mode (for non-bordered tables)
+                tables = camelot.read_pdf(self.pdf_path, pages='all', flavor='stream')
+            
+            for i, table in enumerate(tables):
+                df = table.df
+                
+                # Clean and process the dataframe
+                processed_table = self._process_camelot_table(df, table.page)
+                if processed_table:
+                    self.extracted_tables.append(processed_table)
+                    
+            return len(self.extracted_tables) > 0
+        except Exception as e:
+            # Silently fail and try other methods
+            return False
+    
+    def _process_camelot_table(self, df, page_num):
+        """Process and clean Camelot extracted table"""
+        try:
+            # Remove completely empty rows and columns
+            df = df.dropna(how='all').dropna(axis=1, how='all')
+            
+            if df.empty:
+                return None
+            
+            # Find the actual header row (look for row with most non-empty cells)
+            header_row_idx = 0
+            max_filled = 0
+            
+            for idx in range(min(3, len(df))):  # Check first 3 rows
+                filled = df.iloc[idx].notna().sum()
+                if filled > max_filled:
+                    max_filled = filled
+                    header_row_idx = idx
+            
+            # Set header
+            headers = df.iloc[header_row_idx].tolist()
+            df = df.iloc[header_row_idx + 1:]
+            
+            # Clean headers
+            clean_headers = []
+            seen_headers = {}
+            
+            for i, h in enumerate(headers):
+                # Convert to string and clean
+                h_str = str(h).strip() if pd.notna(h) else f"Column_{i+1}"
+                
+                # Remove excessive whitespace and newlines
+                h_str = ' '.join(h_str.split())
+                
+                # If header is too long or contains too much data, simplify it
+                if len(h_str) > 50 or '\n' in str(headers[i]):
+                    # Try to extract just the field name
+                    parts = str(headers[i]).split('\n')
+                    # Look for patterns like "Field Name:" or just use first part
+                    for part in parts:
+                        if ':' in part:
+                            potential_header = part.split(':')[0].strip()
+                            if len(potential_header) < 50 and potential_header:
+                                h_str = potential_header
+                                break
+                    else:
+                        # Use first meaningful part
+                        h_str = parts[0].strip()[:50] if parts[0].strip() else f"Column_{i+1}"
+                
+                # Handle duplicate headers
+                if h_str in seen_headers:
+                    seen_headers[h_str] += 1
+                    h_str = f"{h_str}_{seen_headers[h_str]}"
+                else:
+                    seen_headers[h_str] = 0
+                
+                clean_headers.append(h_str)
+            
+            df.columns = clean_headers
+            
+            # Clean cell values
+            df = df.map(lambda x: str(x).strip() if pd.notna(x) and str(x).strip() else '')
+            
+            # Remove rows where all cells are empty
+            df = df[df.astype(str).ne('').any(axis=1)]
+            
+            # Reset index
+            df = df.reset_index(drop=True)
+            
+            if df.empty:
+                return None
+            
+            return {
+                'method': 'camelot',
+                'page': page_num,
+                'data': df.to_dict('records'),
+                'headers': clean_headers
+            }
+            
+        except Exception as e:
+            return None
+    
+    def extract_with_ocr_and_pattern(self):
+        """Extract using OCR and intelligent pattern matching"""
+        with fitz.open(self.pdf_path) as doc:
+            for page_num, page in enumerate(doc, start=1):
+                # Get text (if available)
+                text = page.get_text()
+                
+                # If no text, use OCR
+                if not text.strip():
+                    pix = page.get_pixmap()
+                    img = Image.open(io.BytesIO(pix.tobytes()))
+                    text = pytesseract.image_to_string(img, lang="eng+ara")
+                
+                if text.strip():
+                    # Try to identify and extract table structures
+                    tables = self._parse_text_to_table(text, page_num)
+                    self.extracted_tables.extend(tables)
+    
+    def _parse_text_to_table(self, text: str, page_num: int) -> List[Dict]:
+        """Parse text into structured table format using intelligent pattern matching"""
+        tables = []
+        
+        # Split into lines
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        
+        # Method 1: Detect key-value pairs (common in forms)
+        kv_table = self._extract_key_value_pairs(lines)
+        if kv_table and len(kv_table) > 3:  # Only if we found enough data
+            tables.append({
+                'method': 'key_value',
+                'page': page_num,
+                'data': kv_table,
+                'headers': ['Field', 'Value']
             })
-            del cell_img
-            gc.collect()
+        
+        return tables
+    
+    def _extract_key_value_pairs(self, lines: List[str]) -> List[Dict]:
+        """Extract key-value pairs like 'Customer Name: John Doe'"""
+        data = []
+        
+        # Common separators
+        patterns = [
+            r'^([^:]+):\s*(.+)$',  # Colon separator
+            r'^([^-]+)-\s*(.+)$',   # Dash separator
+            r'^([^=]+)=\s*(.+)$',   # Equal separator
+        ]
+        
+        for line in lines:
+            # Skip lines that are too long (likely not field names)
+            if len(line) > 200:
+                continue
+                
+            for pattern in patterns:
+                match = re.match(pattern, line)
+                if match:
+                    key = match.group(1).strip()
+                    value = match.group(2).strip()
+                    
+                    # Filter out very short keys or keys with too many special chars
+                    if 3 <= len(key) <= 100 and value and len(value) <= 500:
+                        # Skip if key has too many numbers (likely data, not field name)
+                        num_count = sum(c.isdigit() for c in key)
+                        if num_count / len(key) < 0.5:  # Less than 50% numbers
+                            data.append({
+                                'Field': key,
+                                'Value': value
+                            })
+                    break
+        
+        return data if len(data) > 0 else []
+    
+    def get_results(self) -> Dict:
+        """Get all extracted tables in a structured format"""
+        return {
+            'success': len(self.extracted_tables) > 0,
+            'total_tables': len(self.extracted_tables),
+            'tables': self.extracted_tables
+        }
 
-        results.append({"page": page_num + 1, "tables": page_data})
-        del img
-        gc.collect()
 
-    return results
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "No file path provided"}))
+        result = {
+            'success': False,
+            'error': 'Usage: python extract_text.py <path_to_pdf>'
+        }
+        print(json.dumps(result, ensure_ascii=False))
         sys.exit(1)
 
-    file_path = sys.argv[1]
+    pdf_path = sys.argv[1]
+
     try:
-        table_text_data = extract_table_text(file_path)
-        print(json.dumps({"tables": table_text_data}, indent=2, ensure_ascii=False))
+        extractor = PDFTableExtractor(pdf_path)
+        
+        # Try Camelot first (best for structured tables)
+        success = extractor.extract_with_camelot()
+        
+        # If Camelot fails or finds nothing, use OCR + pattern matching
+        if not success:
+            extractor.extract_with_ocr_and_pattern()
+        
+        # Get results
+        results = extractor.get_results()
+        
+        if results['success']:
+            # Output as JSON for easy parsing in PHP
+            print(json.dumps(results, ensure_ascii=False, indent=2))
+        else:
+            print(json.dumps({
+                'success': False,
+                'error': 'No tables could be extracted from the PDF'
+            }, ensure_ascii=False))
+    
     except Exception as e:
-        print(json.dumps({"error": str(e)}))
+        print(json.dumps({
+            'success': False,
+            'error': f'Error processing PDF: {str(e)}'
+        }, ensure_ascii=False))
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
