@@ -18,7 +18,10 @@ class AdminUserSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'password' => Hash::make('admin123'),
-            // 'is_admin' => 1, // Backpack checks this
+            'email_verified_at' => now(),
+            'phone' => '1234567890',
+            'role' => 'admin',
+            'remember_token' => \Illuminate\Support\Str::random(10),
         ]);
     }
 }

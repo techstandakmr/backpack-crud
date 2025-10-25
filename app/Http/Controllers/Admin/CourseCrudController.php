@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Backpack\CRUD\app\Library\Widget;
-
+use App\Http\Controllers\Admin\Operations\DuplicateOperation;
 /**
  * Class CourseCrudController
  * @package App\Http\Controllers\Admin
@@ -23,7 +23,7 @@ class CourseCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
-
+    use DuplicateOperation;
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
      * 
@@ -106,6 +106,7 @@ class CourseCrudController extends CrudController
                 CRUD::addClause('where', 'author_id', $value);
             }
         );
+        $this->crud->addButtonFromView('line', 'duplicate', 'duplicate', 'beginning');
     }
 
     /**
