@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lesson extends Model
 {
-    use CrudTrait;
+     use CrudTrait;
      use HasFactory;  
     protected $fillable = ['title', 'content', 'course_id'];
     public function course()

@@ -16,7 +16,7 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'role', // Add this field so Backpack forms work with it
+        'role',
     ];
 
     protected $hidden = [
